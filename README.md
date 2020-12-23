@@ -13,7 +13,8 @@ motherboards or applications.
 
 Bill of Materials: 
       https://docs.google.com/spreadsheets/d/1tjXMvY8Ov9ljX92phIoySIcV0aM8psuqZ-wuVCSjxi4/edit?usp=sharing
-My initial prototype
+      
+My initial prototype:
       https://docs.google.com/spreadsheets/d/1ESvuHrNF-DnBGYz-8B5h_lNTvHFGtqw5J4fCP3uyhEo/edit?usp=sharing
 
 I also recommend the following Youtube videos:
