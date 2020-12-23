@@ -17,7 +17,9 @@ My initial prototype
       https://docs.google.com/spreadsheets/d/1ESvuHrNF-DnBGYz-8B5h_lNTvHFGtqw5J4fCP3uyhEo/edit?usp=sharing
 
 I also recommend the following Youtube videos:
+
       desertsun02's videos on youtube on DIY evaporative cooling.
+
       Major Hardware's video on 3d printed evaporative coolers and PC water cooling loops.
 
 NOTE: RepVap cannot print itself. the name is simply an omage to the amazing RepRap project and the culture of 
