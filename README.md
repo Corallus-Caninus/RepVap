@@ -8,7 +8,7 @@ RepVap is a high flow water chiller for direct cooling of aluminum cooling block
 CPUs and the design is made to be very affordable (~$100 for all the bells and whistles).
 
 RepVap is designed with SolidPython an OpenSCAD wrapper. All designs are parametric such that any container 
-could be used. All variations of the design can be changed in the respective configuration files for different 
+could be used (A gable fan on a large trash bin is not out of the question). All variations of the design can be changed in the respective configuration files for different 
 motherboards or applications.
 
 Bill of Materials: 
