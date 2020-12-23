@@ -1,0 +1,10 @@
+# configuration for standoff riser 
+# all values are in millimeters
+
+
+riser_diameter = 10
+riser_height = 120
+fraction_depth = 2
+screw_diameter = 
+screw_bolt_diameter = 
+screw_bolt_length = 

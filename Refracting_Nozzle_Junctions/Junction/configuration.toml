@@ -1,0 +1,20 @@
+# configuration for T and + Junction
+# all values are in millimeters
+
+# NOTE: wall_thickness is subtractive in junction
+#       this will cause a pressure loss but keeps tube 
+#       fitting tight.
+
+# TODO: create outer_diameter junctions for putting nozzles 
+#       in parallel to reduce pressure drop.
+# TODO: would prefer a screw fitting to go over the nozzle and sinch
+#       a small flexible overhang part onto the tube. segmented cone
+#       that puts friction pressure on the surface of the tubing towards 
+#       the center of the junction.
+
+isCross = true
+tube_diameter = 11.1125 # outer diameter, inner is 8
+# minimize this value to watertight object given pressure
+wall_thickness = 1.5 #2mm is pvc tubing wall_thickness (ideal)
+# length must be greater than function diameter
+length = 16

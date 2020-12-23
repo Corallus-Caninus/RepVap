@@ -1,0 +1,15 @@
+# configuration for refracting plate and nozzle
+# all values are in millimeters
+
+# NOTE: must be printed on its side to prevent hinge delamination
+
+# TODO: this can work but nozzle_diameter needs to be much larger. 
+#       This isn't bad since wont have to print as many (16 @ 1mm)
+nozzle_diameter = 2.5
+drop_down_depth = 14 # was 16
+# value should be between 45 and 90 for elastic 
+# particle pressure and <45 for non-elastic particle pressure
+angle_of_attack = 45 # degrees
+insertion_distance = 4
+insertion_rotation = 35 # degrees
+insertion_thickness = 2

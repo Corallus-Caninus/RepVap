@@ -1,0 +1,15 @@
+# NOTE: this should be printed with an infil of like ~%15
+# all measurements are in millimeters
+
+# the diameter of the tube structure
+radius = 12
+# the height of a given segment
+height = 20
+wall_thickness = 3
+# the size of the spacing to allow the 
+# ball socket to flex onto the joint
+# this and wall thickness determines flexibility
+# NOTE: this is tangential about 120 degree rotations 
+#       and not the curve distance. adjust accordingly
+space_width = 20
+space_height = 5

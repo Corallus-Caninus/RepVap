@@ -1,0 +1,28 @@
+#76.2 initial_radius
+#114.3 final_radius
+#was 152.4
+# NOTE: support gussets on white lid are 135mm
+# leaves outer area for support.
+
+# all entries are in millimeters.
+# nozzle_diameter = 0.4 impossible with extrusion width
+# TODO: try smaller layer heights(currently 0.2). Effectively underextrudes for 
+#	better resolution in the case of small geometries
+#	test flow of sample for further analysis. need sufficient 
+#	pressure through array sequence since negating tube_wall_thickness
+
+initial_radius = 94
+final_radius = 115 #was 135
+nozzle_diameter = 1#0.8
+
+#TODO: this is important! will fill in nozzle_diameter otherwise!
+#	also prevents early condensation through constructive interference?
+#nozzle_wall_thickness = 2
+nozzle_wall_thickness = 1#0.5
+drop_down_depth = 8
+max_segment_size = 150
+# NOTE: fits the outside to prevent pressure loss and uses a glue solution.
+# TODO: consider a fastening flex screw sealer
+tube_diameter = 11.1125 # was 8
+wall_thickness = 4.5
+tube_wall_thickness = 1.25 
