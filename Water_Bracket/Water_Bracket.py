@@ -9,10 +9,8 @@ import os
 # for now may be able to union two water_mounts with identical screw_args, just need to
 # ensure can drive screws
 
-# TODO: really need a GUI-photogrammetry pipeline since this is so much configuration. see Dev-Notes
-
 # TODO: screw down fasteners for OD of tubing to assist with ribbing of nozzles. Prioritize failsafing
-#       in 3d print design (build stays cheap).
+#       in 3d print design (build stays cheap). This is lowest priority.
 
 
 def mount_side_nozzles(**argv):

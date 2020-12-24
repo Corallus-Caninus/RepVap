@@ -10,9 +10,9 @@ import numpy as n
 # this is the only information needed to form a basis for the measurements
 
 # instruct the user to place the water cooling block where they would like it mounted
-# take user images (video? picture "errors" would produce perspective for monocular photogrammetry)
+# take user panoramic nadir video (everyone with an iphone knows how this works)
 
-# request the user clicks twice (for average) each corner of the block
+# request the user clicks twice (for average) each corner of the block, each nozzle and the center
 
 # sorbel filter the image 
 
@@ -20,9 +20,11 @@ import numpy as n
 # (The sides not including the nozzle, 1/2 the block as a right triangle) to the user found corners, 
 # if within tolerance proceed, else recommend to flour or dust the object to prevent reflections and restart
 
-# localize all pixels in image solution
+# localize all pixels in image solution (calculate mm/pixel)
 
-# have the user click on all screw pixels, entering screw params each time.
+# have the user click on all screw pixels, entering screw params each time. 
+# (retain value in window so they can click each screw type in sequence)
+
 # have the user click on all VRM/VRAM etc. corners, bounding a surface (no param entry)
 
 # generate configuration for water_bracket and call.

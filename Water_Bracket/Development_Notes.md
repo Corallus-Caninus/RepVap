@@ -12,7 +12,7 @@ Create hardshell tubing and integrate into bucket/splash guard guides.
 
 Can use a pressure sensor on the plumbing to indicate a leak which can set a buzzer alarm that turns
 off pump or the buckets can just fill if not set upside down. alarm should exist anyways on any 
-digital-electric systemthat isnt >IPX2 rated.
+hydro-electric system that isnt >IPX2 rated.
 
 # RESEARCH
 A GUI that creates all 3D print files(Block Harness, VRM Connection Harness, Board Risers),
