@@ -19,7 +19,7 @@ My initial prototype:
 
 I also recommend the following Youtube videos:
 
-      desertsun02's videos on youtube on DIY evaporative cooling.
+      desertsun02's videos on DIY evaporative cooling.
 
       Major Hardware's video on 3d printed evaporative coolers and PC water cooling loops.
 
