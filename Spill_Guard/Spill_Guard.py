@@ -45,7 +45,7 @@ def Spill_Guard(container_radius, inlet_height, shroud_distance, radius, clip_ga
     shroud = shroud_solid-shroud
 
     # move into position atop the catch
-    shroud = up(radius+wall_thickness)(shroud)
+    shroud = up(radius+2*wall_thickness)(shroud)
     shroud = shroud - forward(container_radius)(container)
 
     # the spout guides water into container
