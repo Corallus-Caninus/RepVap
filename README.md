@@ -4,7 +4,7 @@ A *majority* 3D printed evaporative cooler.
 This project is currently under active development. I have a working RepVap but you may need assistance.
 Email me at ward.joshua92@yahoo.com.
 
-RepVap is a high flow water chiller for direct cooling of aluminum cooling blocks. Its intended use is for 
+RepVap is a high flow water chiller for cheap aluminum cooling blocks. Its intended use is for 
 CPUs and the design is made to be very affordable (~$100 for all the bells and whistles).
 
 RepVap is designed with SolidPython an OpenSCAD wrapper. All designs are parametric such that any container 
