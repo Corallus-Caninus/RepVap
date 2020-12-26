@@ -93,21 +93,21 @@ def bucket_emitter_array(
                 wall_thickness, tube_wall_thickness, True)
             filename = "ENDCAP_x1" + "_nozzle_arc" + str(index+1)
             scad_render_to_file(capped_disk_partition, filename+".scad")
-            os.system("start ./OpenSCAD/openscad.exe -o " +
+            os.system("start ../OpenSCAD/openscad.exe -o " +
                       filename + ".stl " + filename + ".scad")
 
             print("rendering.. " + str(index))
             filename = "x" + str(num_segments) + "_" + \
                 "_nozzle_arc"+str(index)
             scad_render_to_file(disk_partition, filename+".scad")
-            os.system("start ./OpenSCAD/openscad.exe -o " +
+            os.system("start ../OpenSCAD/openscad.exe -o " +
                       filename + ".stl " + filename + ".scad")
         else:
             print("rendering.. " + str(index))
             filename = "x" + str(num_segments) + "_" + \
                 "_nozzle_arc"+str(index+1)
             scad_render_to_file(disk_partition, filename+".scad")
-            os.system("start ./OpenSCAD/openscad.exe -o " +
+            os.system("start ../OpenSCAD/openscad.exe -o " +
                       filename + ".stl " + filename + ".scad")
 
         # iterate the disk to the next radii
