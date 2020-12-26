@@ -19,10 +19,10 @@ def Spill_Guard(container_radius, inlet_height, shroud_distance, radius, clip_ga
     # create hemisphere shell for catching water droplets
     catch_solid = sphere(radius+wall_thickness, segments=50)
     catch = sphere(radius, segments=50)
-    catch = catch_solid - catch
+    catch = catch_solid - hole()(catch)
 
     # remove the upper half
-    catch = catch - up(radius+wall_thickness)(negate)
+    catch = catch - up(radius+2*wall_thickness)(negate)
     # remove the front half
     catch = catch - forward(container_radius)(container)
 
@@ -32,42 +32,33 @@ def Spill_Guard(container_radius, inlet_height, shroud_distance, radius, clip_ga
     # cape about the outside past wall_thickness to catch high angle & velocity
     #       particles without pressure loss.
     # an eliptic cylinder with major radius iterating a given curve
-    shroud = cylinder(radius+wall_thickness, 1, center=True) - \
-        cylinder(radius, 1, center=True)
-    shroud = up(0.5+radius+wall_thickness)(shroud)
-    for it in range(1, int(shroud_distance)):
-        # TODO: wall_thickness is deformed here and not consistent,
-        #       removes wall_thickness percentage of major radius
-        cur_shroud_solid = cylinder(radius+wall_thickness, h=2, center=True)
-        cur_shroud_solid = scale([1, (int(shroud_distance)+it) /
-                            int(shroud_distance), 1])(cur_shroud_solid)
+    shroud_solid = cylinder(r1=radius+wall_thickness, r2=shroud_distance +
+                            wall_thickness, h=inlet_height, center=True)
+    # TODO: container_radius in intersect is ideally inf.
+    shroud_solid = intersection()(shroud_solid, up(shroud_distance/2 + wall_thickness/2)
+                                  (cube([2*radius+2*wall_thickness, container_radius, shroud_distance+wall_thickness], center=True)))
+    shroud = cylinder(r1=radius, r2=shroud_distance,
+                      h=inlet_height, center=True)
+    shroud = intersection()(shroud, up(shroud_distance/2+wall_thickness/2)
+                            (cube([2*radius, container_radius, shroud_distance], center=True)))
 
-        cur_shroud = cylinder(radius, h=2, center=True)
-        cur_shroud = scale([1, (int(shroud_distance)+it) /
-                            int(shroud_distance), 1])(cur_shroud)
-        
-        cur_shroud = cur_shroud_solid - hole()(cur_shroud)
+    shroud = shroud_solid-shroud
 
-        # move into position atop catch
-        shroud += up(it+radius+wall_thickness)(cur_shroud)
-
+    # move into position atop the catch
+    shroud = up(radius+wall_thickness)(shroud)
     shroud = shroud - forward(container_radius)(container)
 
-    # extra wall_thickness to seam the spout with the catch (marginally perfect fit)
-    # TODO: increase spout distance, has a chance to align with bucket wall through tolerances
-    #       TEST AND CLOSE
-    spout = cylinder(radius, 4*wall_thickness + clip_gap, segments=50)
-    spout = spout - cylinder(radius - wall_thickness/2,
-                             4*wall_thickness + clip_gap, segments=50)
-
-    negate = cube(2*radius+wall_thickness, center=True)
+    # the spout guides water into container
+    spout = cylinder(radius, 4*wall_thickness +
+                     clip_gap, center=True, segments=50)
+    spout = spout - cylinder(radius - wall_thickness,
+                             4*wall_thickness + clip_gap, center=True, segments=50)
 
     spout = rotate([90, 0, 0])(spout)
     # remove the top of the spout to create a half pipe
     spout = spout - up(radius)(negate)
-
+    # place along the catch
     spout = up(radius+wall_thickness)(spout)
-    spout = forward(2*wall_thickness + clip_gap/2)(spout)
 
     # create clip slide-on fastener
     clip = cube([wall_thickness, wall_thickness, clip_depth], center=True)
@@ -102,7 +93,7 @@ def render_object(render_object, filename):
     scad_render_to_file(render_object, filename + ".scad")
     # render with OpenSCAD
     print("Openscad is now rendering the solution..")
-    os.system("start OpenSCAD/openscad.exe -o " +
+    os.system("start ../OpenSCAD/openscad.exe -o " +
               filename + ".stl " + filename + ".scad")
 
 

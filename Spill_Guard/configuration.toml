@@ -1,23 +1,19 @@
 # Spill Guard
 # all measurements are in millimeters
 
-# currently need 16 to cover the lower band of the bucket
-# since this generates a hemisphere, the radius is 
-# the height and width of the solution. 
-
 # the radius of the bucket or other container
 container_radius = 135
 # height of the inlet solution (for the bucket this is all hole along all the bands)
 # above the first half of the first hole since this will be the spout and catch.
-inlet_height = 50
+inlet_height = 100
 # distance to shroud from container at the top of the shroud
 # this and inlet height determine shroud_angle. This is used to ensure pressure 
 # loss doesnt occur due to venturi choke.
-shroud_distance = 60 #50
+shroud_distance = 50 
 # since we use 1" diameter drill bit this is the radius:
  radius=12.66
- # TODO: measure with calipers. this may not be the same 
- #      on either side of bucket due to PMI precision
+ # the thickness of the bucket
  clip_gap=2.35
+ # the depth the clips will sit
  clip_depth= 11
  wall_thickness= 4
