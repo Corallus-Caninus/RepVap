@@ -63,7 +63,7 @@ def Spill_Guard(container_radius, inlet_height, shroud_distance, radius, clip_ga
 
     spout = rotate([90, 0, 0])(spout)
     # remove the top of the spout to create a half pipe
-    spout = spout - up(radius)(negate)
+    spout = spout - up(radius+wall_thickness)(negate)
     # place along the catch
     spout = up(radius+wall_thickness)(spout)
 
