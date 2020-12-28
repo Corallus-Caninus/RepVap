@@ -4,9 +4,9 @@ A *majority* 3D printed evaporative cooler.
 This project is currently under active development. I have a working RepVap but you may need assistance.
 Email me at ward.joshua92@yahoo.com.
 
-You will need to put a working version of openscad in the root directory so solidpython can render the STLs.
+You will need to put a working version of OpenSCAD in the root directory so SolidPython can render the STLs.
 Each folder contains a configuration file and a python file. Set the values in the configuration.toml then 
-run the python program to generate your STls. A Guide on building a RepVap out of a 5 gallon bucket is 
+run the python program to generate your STls. A guide on building a RepVap out of a 5 gallon bucket is 
 under development.
 
 RepVap is a high flow water chiller for cheap aluminum cooling blocks. Its intended use is for 
