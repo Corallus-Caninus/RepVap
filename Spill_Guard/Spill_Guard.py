@@ -14,12 +14,13 @@ def Spill_Guard(container_radius, inlet_height, shroud_distance, radius, clip_ga
     # This is the simulated container
     # TODO: height is just large but not parametrically precise
     container = cylinder(container_radius, 2*(shroud_distance+inlet_height+radius+2*wall_thickness),
-                         center=True, segments=50)
+                         center=True, segments=100)
 
     # create hemisphere shell for catching water droplets
-    catch_solid = sphere(radius+wall_thickness, segments=50)
-    catch = sphere(radius, segments=50)
-    catch = catch_solid - hole()(catch)
+    catch_solid = sphere(radius+wall_thickness, segments=100)
+    catch = sphere(radius, segments=100)
+    # move up a little because of tearing artifact with spout 
+    catch = catch_solid - hole()(up(wall_thickness)(catch))
 
     # remove the upper half
     catch = catch - up(radius+2*wall_thickness)(negate)
@@ -56,9 +57,9 @@ def Spill_Guard(container_radius, inlet_height, shroud_distance, radius, clip_ga
 
     # the spout guides water into container
     spout = cylinder(radius, 4*wall_thickness +
-                     clip_gap, center=True, segments=50)
+                     clip_gap, center=True, segments=100)
     spout = spout - cylinder(radius - wall_thickness,
-                             4*wall_thickness + clip_gap, center=True, segments=50)
+                             4*wall_thickness + clip_gap, center=True, segments=100)
 
     spout = rotate([90, 0, 0])(spout)
     # remove the top of the spout to create a half pipe
