@@ -34,11 +34,17 @@ def Spill_Guard(container_radius, inlet_height, shroud_distance, radius, clip_ga
     # an eliptic cylinder with major radius iterating a given curve
     shroud_solid = cylinder(r1=radius+wall_thickness, r2=shroud_distance +
                             wall_thickness, h=inlet_height, center=True)
+    shroud_solid = forward(2*radius-2*wall_thickness)(shroud_solid)
     # TODO: container_radius in intersect is ideally inf.
     shroud_solid = intersection()(shroud_solid, up(shroud_distance/2 + wall_thickness/2)
                                   (cube([2*radius+2*wall_thickness, container_radius, shroud_distance+wall_thickness], center=True)))
+                                  
+    # NOTE: this is by default twice the radius since catch is not center=True
+    # TODO: test centering the catch. I prefer radius offset due to fitting the cylinders.
+    #       just change to centered by setting this not centered... would look better
     shroud = cylinder(r1=radius, r2=shroud_distance,
                       h=inlet_height, center=True)
+    shroud = forward(2*radius-2*wall_thickness)(shroud)
     shroud = intersection()(shroud, up(shroud_distance/2+wall_thickness/2)
                             (cube([2*radius, container_radius, shroud_distance], center=True)))
 
