@@ -52,20 +52,22 @@ def bottle_stand(leg_height, leg_camber, wall_thickness, nozzle_diameter, nozzle
     rotation_offset_x = leg_height*sin(radians(leg_camber))
     rotation_offset_y = leg_height*cos(radians(leg_camber))
     # solve the intersection of the leg with the orifice penetrating wall_thickness
-    screw_insert_distance = 2*wall_thickness*tan(radians(leg_camber))
+    screw_insert_distance = 4*wall_thickness*tan(radians(leg_camber))
     leg = cylinder(r=wall_thickness, h=leg_height +
                    screw_insert_distance, center=True)
     # TODO: adjust screw params for precision of print, possibly extract parameter
     section = screw_thread.default_thread_section(
-        tooth_height=10, tooth_depth=5)
+        tooth_height=2*wall_thickness, tooth_depth=wall_thickness)
+    # NOTE: pitch is 1 full screw rotation here divid for freq
+    # TODO: -0.1 to patch seam artifact isnt good much bad.
     leg_screw = screw_thread.thread(outline_pts=section,
-                                    inner_rad=wall_thickness,
+                                    inner_rad=wall_thickness-0.1,
                                     pitch=screw_insert_distance,
                                     length=screw_insert_distance,
-                                    segments_per_rot=50,
+                                    segments_per_rot=1000,
                                     neck_in_degrees=90,
                                     neck_out_degrees=90)
-    leg = leg+up(leg_height/2)(leg_screw)
+    leg = leg+up(leg_height/2 - screw_insert_distance/2)(leg_screw)
     leg = rotate([0, -leg_camber, 0])(up(leg_height /
                                          2+screw_insert_distance/2)(leg))
     leg = leg - hole()(base_plate)
