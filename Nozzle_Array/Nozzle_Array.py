@@ -1,6 +1,5 @@
 # This is highest priority print
 
-# TODO: TEST AND CLOSE
 # TODO: pressure drop in intake and outlet nozzles isnt considered.
 #       Should use outer diameter with a cinch screw.
 
@@ -9,10 +8,12 @@
 
 # TODO: set set segments in header of render file instead of in geometry for production
 
-# TODO: sort out wall_thickness.
-#       either 2*wall_thickness in geometry or wall_thickness with wall_thickness/2 in holes but not both
-#       make nozzle_wall_thickness the same as wall_thickness wrt radius outlet/inlet nozzles
-#   TEST AND CLOSE
+# TODO: consider a snap hinge that pokes through inlet and outlet to hang from
+#       bottom of lid with two small holes instead of large gash.
+
+# TODO: consider pagoda nozzles that ramp from diameter to pagoda_thickness
+#       then down to pagoda_thickness/2 or wall_thickness. this or screw down OD nozzles are critical
+#       to pressure consistency and scalability. Just do pagoda, they work and will keep inner diameter
 
 from math import *
 import os
@@ -23,7 +24,7 @@ import toml
 
 def bucket_emitter_array(
         initial_radius, final_radius, nozzle_diameter, nozzle_wall_thickness,
-        max_segment_size, drop_down_depth, tube_diameter, wall_thickness, tube_wall_thickness):
+        max_segment_size, drop_down_depth, tube_diameter, pagoda_thickness, wall_thickness):
     '''
     PARAMETERS:
         intial_radius:
@@ -73,24 +74,23 @@ def bucket_emitter_array(
         # only need spacing of tube_diameter to interconnect. tube connector nozzles will be length
         # of tube diameter. wall thickness is flange width
         num_segments = int(disk_circumference /
-                           (max_segment_size + 3*tube_diameter + wall_thickness))
+                           (max_segment_size + 4*tube_diameter + wall_thickness))
 
         print("constructing disk partition with radius " + str(segment_radius))
         disk_partition, cur_nozzle_area = build_disk_partition(
-            disk_circumference, disk_minor_radius, disk_major_radius, segment_radius,
+            segment_radius,
             drop_down_depth, nozzle_diameter, nozzle_wall_thickness,
-            tube_diameter, max_segment_size,
-            wall_thickness, tube_wall_thickness)
+            tube_diameter, max_segment_size, pagoda_thickness, wall_thickness)
         total_nozzle_area = total_nozzle_area + cur_nozzle_area*num_segments
 
         # check iteration but this should be performed on last to cap the array sequence
         # TODO: arc count is off
         if index+1 == number_disks:
             capped_disk_partition, cur_nozzle_area = build_disk_partition(
-                disk_circumference, disk_minor_radius, disk_major_radius, segment_radius,
+                segment_radius,
                 drop_down_depth, nozzle_diameter, nozzle_wall_thickness,
-                tube_diameter, max_segment_size,
-                wall_thickness, tube_wall_thickness, True)
+                tube_diameter, max_segment_size, pagoda_thickness,
+                wall_thickness, True)
             filename = "ENDCAP_x1" + "_nozzle_arc" + str(index+1)
             scad_render_to_file(capped_disk_partition, filename+".scad")
             os.system("start ../OpenSCAD/openscad.exe -o " +
@@ -127,8 +127,8 @@ def bucket_emitter_array(
 
 def build_disk_partition(segment_radius,
                          drop_down_depth, nozzle_diameter, nozzle_wall_thickness,
-                         tube_diameter, max_segment_size,
-                         wall_thickness, tube_wall_thickness, final=False):
+                         tube_diameter, max_segment_size, pagoda_thickness,
+                         wall_thickness, final=False):
     '''
     builds a single array segment of a disk.
     '''
@@ -195,6 +195,7 @@ def build_disk_partition(segment_radius,
     print('got mean: {}'.format(num_nozzle_sectors/2))
 
     segment_nozzle_area = 0
+    # TODO: why are we ceil /2 here? this is marginally wrong but just in stdout
     for _ in range(int(ceil(num_nozzle_sectors/2))):
         # the angle to iterate by
         # TODO: autorefactored function
@@ -212,7 +213,7 @@ def build_disk_partition(segment_radius,
             nozzle_diameter, nozzle_wall_thickness, final_sector_radius,
             sweep, segment_nozzle_area, nozzle, disk_partition)
 
-        # TODO: fit is incorrect dude to floor div
+        # TODO: fit is incorrect due to floor div
         #       use a symmetric iterator about the middle
         # count from the start to halfway then iterate mirror twice about middle
         # just iterate half doing each side symmetrically
@@ -231,33 +232,39 @@ def build_disk_partition(segment_radius,
                     tube_diameter + wall_thickness,
                     wall_thickness/2])(flange)
 
-    tube_connector = cylinder(tube_diameter/2, tube_diameter+wall_thickness/2, segments=200) - \
-        hole()(cylinder(tube_diameter/2 - tube_wall_thickness,
-                        tube_diameter+wall_thickness/2, segments=200))
-    tube_connector = tube_connector + flange
+    # seperate heights for two cylinders that create the pagoda
+    pagoda_nozzle_solid = up(tube_diameter)(cylinder(
+        r2=tube_diameter/2, r1=tube_diameter/2 + pagoda_thickness, h=tube_diameter, segments=200))
+    tube_nozzle_solid = cylinder(tube_diameter/2+pagoda_thickness/2, h=tube_diameter, segments=200)\
+        + pagoda_nozzle_solid
+    # now tap a hole through the center
+    tube_nozzle = tube_nozzle_solid - \
+        hole()(cylinder(tube_diameter/2, 2*tube_diameter, segments=200))
+
+    tube_nozzle = tube_nozzle + flange
 
     # attach to either end of the array, using sweep and origin
-    inlet_tube_connector = translate([(segment_radius + tube_diameter/2 + wall_thickness/2),
-                                      0, tube_diameter/2 + wall_thickness/2])(rotate([90, 0, 0])(tube_connector))
+    inlet_tube_nozzle = translate([(segment_radius + tube_diameter/2 + wall_thickness/2),
+                                   0, tube_diameter/2 + wall_thickness/2])(rotate([90, 0, 0])(tube_nozzle))
 
     # add endcap or T junction and finish connectors
     if final:
-        # mirror sweep of extrusion for the outlet_tube_connector
-        outlet_tube_connector = rotate([0, 0, sweep])(
+        # mirror sweep of extrusion for the outlet_tube_nozzle
+        outlet_tube_nozzle = rotate([0, 0, sweep])(
             translate([(segment_radius + tube_diameter/2 + wall_thickness/2),
                        tube_diameter, tube_diameter/2 + wall_thickness/2])
             (rotate([270, 0, 0])(down(tube_diameter)(flange))))
 
-        disk_partition = (disk_partition + inlet_tube_connector) + \
-            outlet_tube_connector
+        disk_partition = (disk_partition + inlet_tube_nozzle) + \
+            outlet_tube_nozzle
     else:
-        outlet_tube_connector = rotate([0, 0, sweep])(
+        outlet_tube_nozzle = rotate([0, 0, sweep])(
             translate([(segment_radius + tube_diameter/2 + wall_thickness/2),
                        tube_diameter, tube_diameter/2 + wall_thickness/2])
-            (rotate([270, 0, 0])(down(tube_diameter)(tube_connector))))
+            (rotate([270, 0, 0])(down(tube_diameter)(tube_nozzle))))
 
-        disk_partition = (disk_partition + inlet_tube_connector) + \
-            outlet_tube_connector
+        disk_partition = (disk_partition + inlet_tube_nozzle) + \
+            outlet_tube_nozzle
 
     return disk_partition, segment_nozzle_area
 
