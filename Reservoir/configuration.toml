@@ -13,11 +13,11 @@ leg_camber = 15
 wall_thickness = 5
 # the diameter of the narrowest part of the bottle 
 # that will rest in the cusp of the stand
-nozzle_diameter = 40 # was 35 40 because why not
+nozzle_diameter = 85 # was 35 40 because why not
 # the depth of the nozzle section of the bottle
-nozzle_depth = 80
+nozzle_depth = 20
 # the diameter of the bottle that is a cylinder 
 # (not the slope from the nozzle)
 bottle_diameter = 104
 # the depth of the body of the bottle
-bottle_depth = 60
+bottle_depth = 25

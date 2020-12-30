@@ -32,8 +32,8 @@ def bottle_stand(leg_height, leg_camber, wall_thickness, nozzle_diameter, nozzle
     orifice_solid = cylinder(r=bottle_diameter/2 + wall_thickness,
                              h=bottle_depth, center=True)
     # hole here since legs may jut
-    orifice = orifice_solid - cylinder(r=bottle_diameter /
-                                       2, h=bottle_depth, center=True)
+    orifice = orifice_solid - hole()(cylinder(r=bottle_diameter /
+                                       2, h=bottle_depth, center=True))
     # raise orifice to leg stand height
     orifice = up(leg_height+bottle_depth/2)(orifice)
 
@@ -41,8 +41,8 @@ def bottle_stand(leg_height, leg_camber, wall_thickness, nozzle_diameter, nozzle
     throat_solid = cylinder(r1=nozzle_diameter/2 + wall_thickness,
                             r2=bottle_diameter/2 + wall_thickness, h=nozzle_depth, center=True)
     # hole here since legs may jut
-    throat = throat_solid - cylinder(r1=nozzle_diameter/2,
-                                     r2=bottle_diameter/2, h=nozzle_depth, center=True)
+    throat = throat_solid - hole()(cylinder(r1=nozzle_diameter/2,
+                                     r2=bottle_diameter/2, h=nozzle_depth, center=True))
     throat = up(leg_height-nozzle_depth/2)(throat)
 
     # create tripod base
@@ -52,32 +52,26 @@ def bottle_stand(leg_height, leg_camber, wall_thickness, nozzle_diameter, nozzle
     rotation_offset_x = leg_height*sin(radians(leg_camber))
     rotation_offset_y = leg_height*cos(radians(leg_camber))
     # solve the intersection of the leg with the orifice penetrating wall_thickness
-    screw_insert_distance = 4*wall_thickness*tan(radians(leg_camber))
     leg = cylinder(r=wall_thickness, h=leg_height +
-                   screw_insert_distance, center=True)
+                   wall_thickness, center=True)
     # TODO: adjust screw params for precision of print, possibly extract parameter
-    section = screw_thread.default_thread_section(
-        tooth_height=2*wall_thickness, tooth_depth=wall_thickness)
+    # TODO: consider a hilt for the screw. Probably not necessary.
     # NOTE: pitch is 1 full screw rotation here divid for freq
-    # TODO: -0.1 to patch seam artifact isnt good much bad.
-    leg_screw = screw_thread.thread(outline_pts=section,
-                                    inner_rad=wall_thickness-0.1,
-                                    pitch=screw_insert_distance,
-                                    length=screw_insert_distance,
-                                    segments_per_rot=1000,
-                                    neck_in_degrees=90,
-                                    neck_out_degrees=90)
-    leg = leg+up(leg_height/2 - screw_insert_distance/2)(leg_screw)
+    # TODO: -0.1 to patch seam artifact isnt good much bad. 
+    #       FIX THIS. BAD PARAMETERIZATION OF MODELS IS CONSTANTS 
+    #       THEY WILL NEVER PARAMETER SWEEP SUCCESSFULLY.
+    #   inner_rad must be > tooth_depth?
+    # TODO: EPSILON
+    # TODO: integrate leg and forget screw height of bottle is enough head
     leg = rotate([0, -leg_camber, 0])(up(leg_height /
-                                         2+screw_insert_distance/2)(leg))
+                                         2+wall_thickness)(leg))
     leg = leg - hole()(base_plate)
     legs = right(rotation_offset_x + bottle_diameter/2)(leg)
     legs += rotate(120)(legs)
     legs += rotate(240)(legs)
 
-    stand = orifice + throat
-    stand = stand - legs
-    return stand, leg
+    stand = orifice + throat + legs
+    return stand 
 
 
 def render_object(render_object, filename):
@@ -96,6 +90,5 @@ def render_object(render_object, filename):
 
 if __name__ == '__main__':
     config = toml.load("configuration.toml")
-    stand, leg = bottle_stand(**config)
+    stand = bottle_stand(**config)
     render_object(stand, "bottle_stand")
-    render_object(leg, "x3_bottle_stand_leg")
