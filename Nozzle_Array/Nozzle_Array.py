@@ -6,14 +6,15 @@
 # NOTE: consider 2d projections for printing a cut stencil guide
 #       https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/3D_to_2D_Projection
 
-# TODO: set set segments in header of render file instead of in geometry for production
+# TODO: set geometry segments in header of render file instead of in geometry for production
 
 # TODO: consider a snap hinge that pokes through inlet and outlet to hang from
 #       bottom of lid with two small holes instead of large gash.
 
-# TODO: consider pagoda nozzles that ramp from diameter to pagoda_thickness
-#       then down to pagoda_thickness/2 or wall_thickness. this or screw down OD nozzles are critical
-#       to pressure consistency and scalability. Just do pagoda, they work and will keep inner diameter
+# TODO: implement top mounting pieces. Screw or snap-fit? 
+#       screw may have tighter seal. Doesnt matter since glue gasketing the fan anyways. do whats easiest
+
+# TODO: implement spacing between arrays for mechanical stability. 
 
 from math import *
 import os
@@ -24,7 +25,7 @@ import toml
 
 def bucket_emitter_array(
         initial_radius, final_radius, nozzle_diameter, nozzle_wall_thickness,
-        max_segment_size, drop_down_depth, tube_diameter, pagoda_thickness, wall_thickness):
+        max_segment_size, drop_down_depth, tube_diameter, pagoda_thickness, wall_thickness, array_spacing):
     '''
     PARAMETERS:
         intial_radius:
@@ -43,20 +44,24 @@ def bucket_emitter_array(
             the diameter of the tube
         wall_thickness:
             the thickness of the hull (everything except the nozzles).
+        @DEPRECATED
         tube_wall_thickness:
             the thickness of the inlet and outlet nozzles, subtracted from the nozzle cylinder 
             (the larger the value the more constricted the flow)
+        array_spacing:
+            the spacing between nozzle array rings for mechanical stability.
     '''
     # Nonesense assertions:
     assert initial_radius < final_radius, "ERROR: did you enter the radius measurements backwards?"
-    assert nozzle_diameter < tube_diameter, "ERROR: nozzles must divide the tubing!"
+    assert nozzle_diameter < tube_diameter, "ERROR: nozzles must be smaller than the tubing!"
     # NOTE: insert assertions as geometry artifacts are
     #       found that are within build parameterization
 
     # calculate the number of concentric circles given the platter (lid)
-    # This is a 1 dimension cross-section
+    # This is a 1 dimensional cross-section
+    # TODO: include spacing distance here
     number_disks = int(
-        (final_radius-initial_radius)/(tube_diameter + 2*wall_thickness))
+            (final_radius-initial_radius)/(tube_diameter + 2*wall_thickness + 2*array_spacing)) #TODO: + 2*array_spacing
     print("calculated " + str(number_disks) +
           " disks of tube_length to fill the platter.")
     # the tube diameter and both wall thicknesses is our array block's width.
@@ -67,8 +72,9 @@ def bucket_emitter_array(
     for index in range(0, number_disks):
         cur_nozzle_area = 0
         # offset the mean radius by the intial radius
+        #TODO: also iterate by spacing
         segment_radius = disk_minor_radius + \
-            (disk_major_radius-disk_minor_radius)/2
+                (disk_major_radius-disk_minor_radius)/2 + array_spacing # TODO: + spacing
         disk_circumference = 2*pi*segment_radius
         # calculate the number of segments, we assume tube is flexible enough that each segment will
         # only need spacing of tube_diameter to interconnect. tube connector nozzles will be length
@@ -93,22 +99,22 @@ def bucket_emitter_array(
                 wall_thickness, True)
             filename = "ENDCAP_x1" + "_nozzle_arc" + str(index+1)
             scad_render_to_file(capped_disk_partition, filename+".scad")
-            os.system("start ../OpenSCAD/openscad.exe -o " +
-                      filename + ".stl " + filename + ".scad")
+            os.system("/mnt/BORG_CUBE02/code/openscad_fresh/openscad/openscad -o " +
+                      filename + ".stl " + filename + ".scad &")
 
             print("rendering.. " + str(index))
             filename = "x" + str(num_segments) + "_" + \
                 "_nozzle_arc"+str(index)
             scad_render_to_file(disk_partition, filename+".scad")
-            os.system("start ../OpenSCAD/openscad.exe -o " +
-                      filename + ".stl " + filename + ".scad")
+            os.system("/mnt/BORG_CUBE02/code/openscad_fresh/openscad/openscad -o " +
+                      filename + ".stl " + filename + ".scad &")
         else:
             print("rendering.. " + str(index))
             filename = "x" + str(num_segments) + "_" + \
                 "_nozzle_arc"+str(index+1)
             scad_render_to_file(disk_partition, filename+".scad")
-            os.system("start ../OpenSCAD/openscad.exe -o " +
-                      filename + ".stl " + filename + ".scad")
+            os.system("/mnt/BORG_CUBE02/code/openscad_fresh/openscad/openscad -o " +
+                      filename + ".stl " + filename + ".scad &")
 
         # iterate the disk to the next radii
         disk_minor_radius = disk_major_radius
@@ -213,7 +219,7 @@ def build_disk_partition(segment_radius,
             nozzle_diameter, nozzle_wall_thickness, final_sector_radius,
             sweep, segment_nozzle_area, nozzle, disk_partition)
 
-        # TODO: fit is incorrect due to floor div
+        # TODO: fit is incorrect due to floor div?
         #       use a symmetric iterator about the middle
         # count from the start to halfway then iterate mirror twice about middle
         # just iterate half doing each side symmetrically
