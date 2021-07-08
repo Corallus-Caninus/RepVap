@@ -1,0 +1,41 @@
+# all entries are in millimeters.
+
+#input and output to the filter
+#nozzle_wall_thickness = 1 #0.5
+# PVC tube inteconnect diameter in and out of the filter manifold
+pagoda_diameter = 7.6 # was 8 was 7.8
+pagoda_length = 12
+# thickness of the expanding cone to grip the tube
+pagoda_thickness = 5 # was 1.8
+# this should be at least 2 times the thickness of the tube
+pagoda_spacing = 3
+# the grid size of the caps filter. this should be the
+# size of the activated carbon particles.
+#nozzle_grid_height = 5
+
+#number of nozzles to try to generate. will always generate less than this
+num_nozzles = 8
+
+#the filter body
+filter_length = 100
+filter_diameter = 100
+#a flange to attach the filter to the container
+flange_diameter = 20
+
+#thread parameters
+#TODO: butt threads (sawtooth profile) from mcad
+#the resoluion of the thread profile
+thread_resolution = 100
+#the number of twists in the thread
+thread_count = 5
+#the total length of the thread
+thread_span = 50
+#the depth of the threaded insert profile
+thread_depth = 1
+#the height of the threaded insert profile
+thread_length = 1
+#cannot be a perfect point due to the way the thread profile is generated with hull
+thread_sharpness = 0
+
+#NOTE: must be large enough to accomidate thread_depth
+wall_thickness = 4
