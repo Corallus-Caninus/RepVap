@@ -11,16 +11,17 @@
 # TODO: consider a snap hinge that pokes through inlet and outlet to hang from
 #       bottom of lid with two small holes instead of large gash.
 
-# TODO: implement top mounting pieces. Screw or snap-fit? 
+# TODO: implement top mounting pieces. Screw or snap-fit?
 #       screw may have tighter seal. Doesnt matter since glue gasketing the fan anyways. do whats easiest
 
-# TODO: implement spacing between arrays for mechanical stability. 
+# TODO: try array spacing without 2* but just 1*
 
 from math import *
 import os
 from solid import *
 from solid.utils import *
 import toml
+import turtle
 
 
 def bucket_emitter_array(
@@ -54,14 +55,33 @@ def bucket_emitter_array(
     # Nonesense assertions:
     assert initial_radius < final_radius, "ERROR: did you enter the radius measurements backwards?"
     assert nozzle_diameter < tube_diameter, "ERROR: nozzles must be smaller than the tubing!"
+    # draw the lid with final radius and the fan with initial radius as two concentric circles with the same center
+    print("rendering will start when window is closed")
+    turtle.speed(50)
+    turtle.home()
+    turtle.penup()
+    turtle.right(90)    # Face South
+    turtle.forward(final_radius)   # Move one radius
+    turtle.right(270)   # Back to start heading
+    turtle.pendown()    # Put the pen back down
+    turtle.circle(final_radius)    # Draw a circle
+    turtle.penup()      # Pen up while we go home
+    # now draw the fan with the smaller radius with the same center
+    turtle.home()
+    turtle.right(90)    # Face South
+    turtle.forward(initial_radius)   # Move one radius
+    turtle.right(270)   # Back to start heading
+    turtle.pendown()    # Put the pen down
+    turtle.circle(initial_radius)    # Draw a circle
+    turtle.penup()      # Pen up while we go home
+
     # NOTE: insert assertions as geometry artifacts are
     #       found that are within build parameterization
 
     # calculate the number of concentric circles given the platter (lid)
     # This is a 1 dimensional cross-section
-    # TODO: include spacing distance here
     number_disks = int(
-            (final_radius-initial_radius)/(tube_diameter + 2*wall_thickness + 2*array_spacing)) #TODO: + 2*array_spacing
+        (final_radius-initial_radius)/(tube_diameter + 2*wall_thickness + array_spacing))
     print("calculated " + str(number_disks) +
           " disks of tube_length to fill the platter.")
     # the tube diameter and both wall thicknesses is our array block's width.
@@ -72,27 +92,49 @@ def bucket_emitter_array(
     for index in range(0, number_disks):
         cur_nozzle_area = 0
         # offset the mean radius by the intial radius
-        #TODO: also iterate by spacing
         segment_radius = disk_minor_radius + \
-                (disk_major_radius-disk_minor_radius)/2 + array_spacing # TODO: + spacing
+            (disk_major_radius-disk_minor_radius) \
+            + array_spacing
+
         disk_circumference = 2*pi*segment_radius
         # calculate the number of segments, we assume tube is flexible enough that each segment will
-        # only need spacing of tube_diameter to interconnect. tube connector nozzles will be length
+        # only need spacing of tube_diameter to interconnect between nozzles (not to be confused with
+        # rray spacing). tube connector nozzles will be length
         # of tube diameter. wall thickness is flange width
         num_segments = int(disk_circumference /
-                           (max_segment_size + 4*tube_diameter + wall_thickness))
+                           (max_segment_size + 4*tube_diameter + wall_thickness)) + 1
 
         print("constructing disk partition with radius " + str(segment_radius))
-        disk_partition, cur_nozzle_area = build_disk_partition(
+        disk_partition, cur_nozzle_area, sweep = build_disk_partition(
             segment_radius,
             drop_down_depth, nozzle_diameter, nozzle_wall_thickness,
             tube_diameter, max_segment_size, pagoda_thickness, wall_thickness)
         total_nozzle_area = total_nozzle_area + cur_nozzle_area*num_segments
 
+        # DRAW THIS DISK AND ALL SEGMENTS WITH TURTLE
+        # draw the initial disk at radius (disk_minor_radius) with depth disk_major_radius
+        # as a curve of sweep with length max_segment_size
+        # draw a arc around the entire disk with spacing of tube_diameter
+        print("with segments: ", num_segments)
+        turtle.home()
+        turtle.penup()
+        turtle.right(90)    # Face South
+        turtle.forward(segment_radius)   # Move one radius
+        turtle.right(270)   # Back to start heading
+        for i in range(0, num_segments):
+            # move to the next segment along the circumference of the disk
+            turtle.pendown()
+            turtle.circle(segment_radius, sweep)
+            turtle.penup()
+            # now move along the sweep with the spacing distance
+            turtle.circle(segment_radius, tube_diameter)
+
+        # END OF DRAWING DISK AND ALL SEGMENTS
+
         # check iteration but this should be performed on last to cap the array sequence
         # TODO: arc count is off
         if index+1 == number_disks:
-            capped_disk_partition, cur_nozzle_area = build_disk_partition(
+            capped_disk_partition, cur_nozzle_area, sweep = build_disk_partition(
                 segment_radius,
                 drop_down_depth, nozzle_diameter, nozzle_wall_thickness,
                 tube_diameter, max_segment_size, pagoda_thickness,
@@ -130,6 +172,9 @@ def bucket_emitter_array(
           str(tube_nozzle_differential))
     print("PLEASE WAIT WHILE OPENSCAD RENDERS THE MODELS..")
 
+    # return the number of disks and their width
+    return number_disks, disk_major_radius - disk_minor_radius
+
 
 def build_disk_partition(segment_radius,
                          drop_down_depth, nozzle_diameter, nozzle_wall_thickness,
@@ -144,6 +189,7 @@ def build_disk_partition(segment_radius,
     # calculate the radians swept by the segment_length and segment_radius
     sweep = degrees(max_segment_size/segment_radius)
     print("disk partition sweeping: " + str(sweep) + " degrees")
+
     # build array hull, square the circle that is the tube_diameter
 
     # NOTE: wall thickness is actually half here. change after working since
@@ -272,7 +318,7 @@ def build_disk_partition(segment_radius,
         disk_partition = (disk_partition + inlet_tube_nozzle) + \
             outlet_tube_nozzle
 
-    return disk_partition, segment_nozzle_area
+    return disk_partition, segment_nozzle_area, sweep
 
 
 def nozzle_track(nozzle_diameter, nozzle_wall_thickness, sector_radius, sweep, segment_nozzle_area, nozzle, disk_partition):
@@ -303,3 +349,4 @@ def nozzle_track(nozzle_diameter, nozzle_wall_thickness, sector_radius, sweep, s
 if __name__ == "__main__":
     config = toml.load("configuration.toml")
     bucket_emitter_array(**config)
+    turtle.done()
