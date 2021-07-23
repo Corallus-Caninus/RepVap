@@ -5,27 +5,49 @@ import toml
 import os
 
 # TODO: move Openscad to a root project directory and edit render_object (also extract to library)
+# TODO: nubs to stretch filters from polyester cloths over orifice
 
 
-def Spill_Guard(container_radius, inlet_height, shroud_distance, radius, clip_gap, clip_depth, wall_thickness):
+def Spill_Guard(container_top_radius, container_bottom_radius, container_height, guard_height, inlet_height, shroud_distance, radius, clip_gap, clip_depth, wall_thickness):
     # create the negation solutions
     # This is for scrubbing
     negate = cube((radius+wall_thickness)*2, center=True)
-    # This is the simulated container
+    # The simulated container
     # TODO: height is just large but not parametrically precise
-    container = cylinder(container_radius, 2*(shroud_distance+inlet_height+radius+2*wall_thickness),
+    # TODO: also angle the cylinder to match plastic mold injection angle
+    # use R1 and R2 for the cone slope of the bucket 11.91 and 10.33 since its linear
+    # container = cylinder(container_radius, 2*(shroud_distance+inlet_height+radius+2*wall_thickness),
+    container = cylinder(r1=container_top_radius, r2=container_bottom_radius, h=container_height,
                          center=True, segments=100)
+
+    def container_slope_offset(height):
+        '''return the radius for the given height of the container cone'''
+        # first write the line equation
+        # y2 - y1 = m(x2 - x1) where y2 is the container top radius and y1 is the container bottom radius
+        # then solve for the radius
+        # radius = y1 - m(x1)
+        slope = (container_top_radius - container_bottom_radius) / container_height
+        offset = container_bottom_radius - slope * container_height
+        return slope * height + offset
+        # return slope * height
 
     # create hemisphere shell for catching water droplets
     catch_solid = sphere(radius+wall_thickness, segments=100)
     catch = sphere(radius, segments=100)
-    # move up a little because of tearing artifact with spout 
+    # move up a little because of tearing artifact with spout
     catch = catch_solid - hole()(up(wall_thickness)(catch))
 
     # remove the upper half
     catch = catch - up(radius+2*wall_thickness)(negate)
+    # move the catch up to the given height
+    catch = up(guard_height+radius)(catch)
     # remove the front half
-    catch = catch - forward(container_radius)(container)
+    catch = catch - forward(container_slope_offset(guard_height)+2*radius)(container)
+    # TODO move everything up instead of moving this down
+    catch = down(guard_height+radius)(catch)
+    # TODO offset has to scale the shroud but this is already better
+    container_radius = container_slope_offset(guard_height + 2*radius)
+    print(container_radius)
 
     # set catch on xy plane
     catch = up(radius+wall_thickness)(catch)
@@ -35,25 +57,26 @@ def Spill_Guard(container_radius, inlet_height, shroud_distance, radius, clip_ga
     # an eliptic cylinder with major radius iterating a given curve
     shroud_solid = cylinder(r1=radius+wall_thickness, r2=shroud_distance +
                             wall_thickness, h=inlet_height, center=True)
-    shroud_solid = forward(2*radius-2*wall_thickness)(shroud_solid)
+    #shroud_solid = forward(2*radius-2*wall_thickness)(shroud_solid)
     # TODO: container_radius in intersect is ideally inf.
     shroud_solid = intersection()(shroud_solid, up(shroud_distance/2 + wall_thickness/2)
-                                  (cube([2*radius+2*wall_thickness, container_radius, shroud_distance+wall_thickness], center=True)))
-                                  
+                                  (cube([2*radius+2*wall_thickness, container_top_radius, shroud_distance+wall_thickness], center=True)))
+
     # NOTE: this is by default twice the radius since catch is not center=True
     # TODO: test centering the catch. I prefer radius offset due to fitting the cylinders.
     #       just change to centered by setting this not centered... would look better
     shroud = cylinder(r1=radius, r2=shroud_distance,
                       h=inlet_height, center=True)
-    shroud = forward(2*radius-2*wall_thickness)(shroud)
+    #shroud = forward(2*radius-2*wall_thickness)(shroud)
     shroud = intersection()(shroud, up(shroud_distance/2+wall_thickness/2)
-                            (cube([2*radius, container_radius, shroud_distance], center=True)))
+                            (cube([2*radius, container_top_radius, shroud_distance], center=True)))
 
     shroud = shroud_solid-shroud
 
     # move into position atop the catch
     shroud = up(radius+2*wall_thickness)(shroud)
     shroud = shroud - forward(container_radius)(container)
+    shroud = forward(radius+ 2*wall_thickness)(shroud)
 
     # the spout guides water into container
     spout = cylinder(radius, 4*wall_thickness +
@@ -97,10 +120,11 @@ def render_object(render_object, filename):
         render_object: the OpenSCAD object
         filename: a string for the file to be saved
     '''
-    scad_render_to_file(render_object, filename + ".scad")
+    scad_render_to_file(render_object, filename +
+                        ".scad", file_header='$fn=200;')
     # render with OpenSCAD
     print("Openscad is now rendering the solution..")
-    os.system("start ../OpenSCAD/openscad.exe -o " +
+    os.system("/home/bada/Desktop/code/openscad/openscad -o " +
               filename + ".stl " + filename + ".scad")
 
 
