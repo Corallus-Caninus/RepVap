@@ -106,11 +106,15 @@ def Spill_Guard(container_top_radius, container_bottom_radius, container_height,
 
     clip = far_clip + bridge + near_clip
     # now rotate the clip to match the bucket angle
-    clip_angle = degrees(atan((clip_gap/2)/clip_depth))
-    print("clip angle is:", clip_angle)
-    clip = rotate([-clip_angle, 0, 0])(clip)
-    # make up for the rotation to set clip on catch
-    clip_offset = clip_gap/2 * cos(radians(clip_angle))
+    #clip_angle = degrees(atan((clip_gap/2)/clip_depth))
+    #print("clip angle is:", clip_angle)
+    #clip = rotate([-clip_angle, 0, 0])(clip)
+    slope = (container_top_radius - container_bottom_radius) / container_height
+    container_angle = degrees(atan(slope))
+    clip = rotate([-container_angle, 0, 0])(clip)
+    # make up for the rotation to set clip and catch on spout
+    #clip_offset = clip_gap/2 * cos(radians(clip_angle))
+    clip_offset = clip_gap/2 * cos(radians(container_angle))
     clip = up(clip_offset)(clip)
     catch = up(clip_offset)(catch)
 
