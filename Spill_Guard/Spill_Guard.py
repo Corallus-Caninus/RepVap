@@ -1,6 +1,6 @@
 from solid import *
 from solid.utils import *
-from math import asin
+from math import asin, atan, pi, cos, sin, sqrt, tan
 import toml
 import os
 
@@ -41,12 +41,12 @@ def Spill_Guard(container_top_radius, container_bottom_radius, container_height,
     catch = catch - up(radius+2*wall_thickness)(negate)
     # move the catch up to the given height
     catch = up(guard_height+radius)(catch)
+    container_radius = container_slope_offset(guard_height) + radius
     # remove the front half
-    catch = catch - forward(container_slope_offset(guard_height)+2*radius)(container)
+    #catch = catch - forward(container_slope_offset(guard_height)+radius)(container)
+    catch = catch - forward(container_radius)(container)
     # TODO move everything up instead of moving this down
     catch = down(guard_height+radius)(catch)
-    # TODO offset has to scale the shroud but this is already better
-    container_radius = container_slope_offset(guard_height + 2*radius)
     print(container_radius)
 
     # set catch on xy plane
@@ -57,7 +57,7 @@ def Spill_Guard(container_top_radius, container_bottom_radius, container_height,
     # an eliptic cylinder with major radius iterating a given curve
     shroud_solid = cylinder(r1=radius+wall_thickness, r2=shroud_distance +
                             wall_thickness, h=inlet_height, center=True)
-    #shroud_solid = forward(2*radius-2*wall_thickness)(shroud_solid)
+    # shroud_solid = forward(2*radius-2*wall_thickness)(shroud_solid)
     # TODO: container_radius in intersect is ideally inf.
     shroud_solid = intersection()(shroud_solid, up(shroud_distance/2 + wall_thickness/2)
                                   (cube([2*radius+2*wall_thickness, container_top_radius, shroud_distance+wall_thickness], center=True)))
@@ -67,16 +67,18 @@ def Spill_Guard(container_top_radius, container_bottom_radius, container_height,
     #       just change to centered by setting this not centered... would look better
     shroud = cylinder(r1=radius, r2=shroud_distance,
                       h=inlet_height, center=True)
-    #shroud = forward(2*radius-2*wall_thickness)(shroud)
+    # shroud = forward(2*radius-2*wall_thickness)(shroud)
     shroud = intersection()(shroud, up(shroud_distance/2+wall_thickness/2)
                             (cube([2*radius, container_top_radius, shroud_distance], center=True)))
 
     shroud = shroud_solid-shroud
 
-    # move into position atop the catch
-    shroud = up(radius+2*wall_thickness)(shroud)
+    # move up to simulate the container subtraction
+    shroud = up(radius+guard_height)(shroud)
+    shroud = forward(radius + 2*wall_thickness)(shroud)
     shroud = shroud - forward(container_radius)(container)
-    shroud = forward(radius+ 2*wall_thickness)(shroud)
+    # move into position atop the catch
+    shroud = down(guard_height-wall_thickness)(shroud)
 
     # the spout guides water into container
     spout = cylinder(radius, 4*wall_thickness +
@@ -103,6 +105,14 @@ def Spill_Guard(container_top_radius, container_bottom_radius, container_height,
     near_clip = down(clip_depth/2)(near_clip)
 
     clip = far_clip + bridge + near_clip
+    # now rotate the clip to match the bucket angle
+    clip_angle = degrees(atan((clip_gap/2)/clip_depth))
+    print("clip angle is:", clip_angle)
+    clip = rotate([-clip_angle, 0, 0])(clip)
+    # make up for the rotation to set clip on catch
+    clip_offset = clip_gap/2 * cos(radians(clip_angle))
+    clip = up(clip_offset)(clip)
+    catch = up(clip_offset)(catch)
 
     gusset = cube(wall_thickness, center=True)
     gusset = back(wall_thickness)(gusset)
