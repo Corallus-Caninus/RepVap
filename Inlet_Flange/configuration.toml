@@ -9,7 +9,6 @@
 container_top_radius = 151.25
 container_bottom_radius = 131.2
 container_height = 355.6
-guard_height = 88.9
 
 #the slope of the cone that will make a water tight seal against the radius of the inlet
 #cone_slope = 45 #degrees
@@ -17,28 +16,18 @@ guard_height = 88.9
 # since we use 1" diameter drill bit this is the radius:
 radius = 12.66
 
-# distance between the outer cone in the inner cone that is to set how many thread turns
-# until the cones pinch against the container to fasten the outer inlet to the inner inlet
-# this should be the wall thickness of the container
-fastner_gap = 2 #TODO: for some reason this is larger in the model
+# the gap of the bucket wall (container thickness) can also be negative to set pressure on cone
+# actual measurment of lowes bucket: 2.5
+fastner_gap = 1.75 #TODO: for some reason this is larger in the model
 
-#thread parameters
-#TODO: butt threads (sawtooth profile) from mcad
-#the resoluion of the thread profile
-thread_resolution = 1000
-#the number of complete revolutions of the thread
-thread_count = 5
-#the total length of the thread
-thread_span = 12.66
-#the depth of the threaded insert profile, should be less than wall_thickness TODO: but there is an error in the design
-thread_depth = 2
-#the height of the threaded insert profile
-#set to negative and positive to set the buttress rising edge
-thread_length = -1
+tab_width = 12
+tab_length = 2.5
+tab_thickness = 1
+tab_angle = 85    #degrees
+# generally should be half tab_width
+num_tabs = 7
 
-#NOTE: this is subtractive so high values will increase pressure loss by this amount. essentially
-#radius is now radius-wall_thickness when calculating total area of the sum of inlets to equate
-#the fans total area.
+#NOTE: this is subtractive so high values will increase pressure loss by this amount. 
 wall_thickness = 3.25
 
 flange_thickness = 7 #must be greater than wall thickness TODO: make this additive to wall thickness in scad
