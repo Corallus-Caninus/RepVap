@@ -47,7 +47,7 @@ def bucket_emitter_array(
             the thickness of the hull (everything except the nozzles).
         @DEPRECATED
         tube_wall_thickness:
-            the thickness of the inlet and outlet nozzles, subtracted from the nozzle cylinder 
+            the thickness of the inlet and outlet nozzles, subtracted from the nozzle cylinder
             (the larger the value the more constricted the flow)
         array_spacing:
             the spacing between nozzle array rings for mechanical stability.
@@ -94,7 +94,7 @@ def bucket_emitter_array(
         # offset the mean radius by the intial radius
         segment_radius = disk_minor_radius + \
             (disk_major_radius-disk_minor_radius) \
-            + array_spacing
+            + array_spacing*index
 
         disk_circumference = 2*pi*segment_radius
         # calculate the number of segments, we assume tube is flexible enough that each segment will
@@ -141,22 +141,15 @@ def bucket_emitter_array(
                 wall_thickness, True)
             filename = "ENDCAP_x1" + "_nozzle_arc" + str(index+1)
             scad_render_to_file(capped_disk_partition, filename+".scad")
-            os.system("/mnt/BORG_CUBE02/code/openscad_fresh/openscad/openscad -o " +
+            os.system("openscad -o " +
                       filename + ".stl " + filename + ".scad &")
 
-            print("rendering.. " + str(index))
-            filename = "x" + str(num_segments) + "_" + \
-                "_nozzle_arc"+str(index)
-            scad_render_to_file(disk_partition, filename+".scad")
-            os.system("/mnt/BORG_CUBE02/code/openscad_fresh/openscad/openscad -o " +
-                      filename + ".stl " + filename + ".scad &")
-        else:
-            print("rendering.. " + str(index))
-            filename = "x" + str(num_segments) + "_" + \
-                "_nozzle_arc"+str(index+1)
-            scad_render_to_file(disk_partition, filename+".scad")
-            os.system("/mnt/BORG_CUBE02/code/openscad_fresh/openscad/openscad -o " +
-                      filename + ".stl " + filename + ".scad &")
+        print("rendering.. " + str(index))
+        filename = "x" + str(num_segments - 1) + "_" + \
+            "_nozzle_arc"+str(index+1)
+        scad_render_to_file(disk_partition, filename+".scad")
+        os.system("openscad -o " +
+                    filename + ".stl " + filename + ".scad &")
 
         # iterate the disk to the next radii
         disk_minor_radius = disk_major_radius
