@@ -12,27 +12,17 @@
 #       so make iterable args positional and leave template documentation
 
 # ALUMINUM WATER BLOCK MEASUREMENTS #
-# actual measurements-- not from datsheet due to compounding error with print accuracy.
-# measurements seem consistent across order/manufacturing run, verify over time.
-# consider lowering by a fraction of a millimeter to press down on dye
-# NOTE: z is 11.85 but lowered to set pressure on dye
 rectangle_prism_dimensions = "[43, 43, 10]"
-# can be (1,0) (0,-1) etc. avoid diagonal: (-1, 1)
+# can be (1,0) (0,-1) diagonal: (-1, 1) etc.
 nozzle_direction =  "(-1,0)"
 wall_thickness = 2
 
 # SCREW MOBO MEASUREMENTS #
-# TODO:  guessing these are coplanar with dye, follow up post print
-# TODO: consider adding another screw, 4-symmetry may be minimum
-# TODO: radius 83 half wall_thickness again
 screw_args = '''
 [
-{"x": 84, "y": -33, "z": 0, "screw_head_diameter": 4.45, "screw_bolt_diameter": 2,"screw_bolt_depth":  2.4}, 
-{"x": -29.5, "y": 16.28, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7}, 
-{"x": -29.5, "y": -16.28, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7}, 
+    {"x": -25, "y": -25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
+    {"x": 25, "y": -25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
+    {"x": 25, "y": 25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
+    {"x": -25, "y": 25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
 ]'''
-#{"x": 71.88, "y": -41.5, "z": 0, "screw_head_diameter": 4.45, "screw_bolt_diameter": 2,"screw_bolt_depth":  2.4}, 
-#{"x": -37.891, "y": 14.3, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7}, 
-#{"x": -37.891, "y": -14.3, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7}, 
-#{"x": 37.891, "y": -14.3, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  2}, 
-#{"x": 37.891, "y": 14.3, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  2},
+

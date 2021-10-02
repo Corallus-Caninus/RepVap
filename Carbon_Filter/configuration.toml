@@ -6,7 +6,7 @@
 pagoda_diameter = 7.6 # was 8 was 7.8
 pagoda_length = 12
 # thickness of the expanding cone to grip the tube
-pagoda_thickness = 5 # was 1.8
+pagoda_thickness = 1.8 # was 1.8
 # this should be at least 2 times the thickness of the tube
 pagoda_spacing = 3
 # the grid size of the caps filter. this should be the
@@ -14,22 +14,22 @@ pagoda_spacing = 3
 #nozzle_grid_height = 5
 
 #number of nozzles to try to generate. will always generate less than this
-num_nozzles = 8
+num_nozzles = 1
 
 #the filter body
-filter_length = 100
-filter_diameter = 100
+filter_length = 50
+filter_diameter = 50
 #a flange to attach the filter to the container
-flange_diameter = 20
+flange_diameter = 15
 
 #thread parameters
 #TODO: butt threads (sawtooth profile) from mcad
 #the resoluion of the thread profile
-thread_resolution = 100
+thread_resolution = 1000
 #the number of twists in the thread
 thread_count = 5
 #the total length of the thread
-thread_span = 50
+thread_span = 25
 #the depth of the threaded insert profile
 thread_depth = 1
 #the height of the threaded insert profile

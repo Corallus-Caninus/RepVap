@@ -1,3 +1,4 @@
+# NOTE: CURRENTLY DEPRECATED IN FAVOUR OF AQUARIUM PUMPS THAT HAVE FILTERS. IF NOZZLES ARE SMALL ENOUGH TO CLOG CONSIDER THIS IN FUTURE DESIGN.
 from solid import *
 from solid.utils import *
 from math import *
@@ -56,11 +57,15 @@ def Carbon_Filter(pagoda_diameter, pagoda_spacing,
 
     max_num_nozzles = int(filter_area/pagoda_area)
     max_nozzle_row = int(filter_diameter/pagoda_total_diameter) - 1
-    num_nozzle_rows = int(num_nozzles/max_nozzle_row)
+    if num_nozzles > 1:
+        num_nozzle_rows = int(num_nozzles/max_nozzle_row)
+    else:
+        num_nozzle_rows = 1
     nozzle_row_angle = int(360/num_nozzle_rows)
 
     assert num_nozzles <= max_num_nozzles, "num_nozzles must be less than %d" % max_num_nozzles
-    assert num_nozzles % max_nozzle_row == 0, "num_nozzles must be divisible by %d" % max_nozzle_row
+    if num_nozzle_rows > 1:
+        assert num_nozzles % max_nozzle_row == 0, "num_nozzles must be divisible by %d" % max_nozzle_row
 
     print("num_nozzle_rows is %d" % num_nozzle_rows)
     print("nozzle_row_angle is %d" % nozzle_row_angle)
@@ -83,6 +88,9 @@ def Carbon_Filter(pagoda_diameter, pagoda_spacing,
             if filter_pagodas is None:
                 filter_pagodas = filter_pagoda_nozzle
             filter_pagodas = filter_pagodas + filter_pagoda_nozzle
+    if num_nozzles == 1:
+        # just create one nozzle
+        filter_pagodas = pagoda_nozzle
 
     # create a single pagoda for the lower half of the filter
     lower_pagoda = rotate([180, 0, 0])(pagoda_nozzle.copy())
@@ -161,7 +169,7 @@ def Carbon_Filter(pagoda_diameter, pagoda_spacing,
             thread = thread + cur_thread
 
     # move the thread to the bottom of the inner filter
-    thread = translate([0, 0, -filter_length - 2*wall_thickness])(thread)
+    #thread = translate([0, 0, -filter_length - 2*wall_thickness])(thread)
 
     # FINAL ASSEMBLY
     # create a inner and outer filter shells joined by the thread

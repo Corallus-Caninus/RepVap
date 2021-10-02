@@ -6,9 +6,9 @@ import os
 
 # TODO: move Openscad to a root project directory and edit render_object (also extract to library)
 # TODO: nubs to stretch filters from polyester cloths over orifice
+# NOTE: this is currently bugged clip gap does not align was shroud and spout and catch
 
-
-def Spill_Guard(container_top_radius, container_bottom_radius, container_height, guard_height, inlet_height, shroud_distance, radius, clip_gap, clip_depth, wall_thickness):
+def Spill_Guard(container_top_radius, container_bottom_radius, container_height, guard_height, shroud_distance, radius, clip_gap, clip_depth, wall_thickness):
     # create the negation solutions
     # This is for scrubbing
     negate = cube((radius+wall_thickness)*2, center=True)
@@ -41,10 +41,10 @@ def Spill_Guard(container_top_radius, container_bottom_radius, container_height,
     catch = catch - up(radius+2*wall_thickness)(negate)
     # move the catch up to the given height
     catch = up(guard_height+radius)(catch)
-    container_radius = container_slope_offset(guard_height) + radius
+    container_radius = container_slope_offset(guard_height)
     # remove the front half
-    #catch = catch - forward(container_slope_offset(guard_height)+radius)(container)
-    catch = catch - forward(container_radius)(container)
+    # catch = catch - forward(container_slope_offset(guard_height)+radius)(container)
+    catch = catch - forward(container_radius+radius+clip_gap+wall_thickness)(container)
     # TODO move everything up instead of moving this down
     catch = down(guard_height+radius)(catch)
     print(container_radius)
@@ -56,7 +56,7 @@ def Spill_Guard(container_top_radius, container_bottom_radius, container_height,
     #       particles without pressure loss.
     # an eliptic cylinder with major radius iterating a given curve
     shroud_solid = cylinder(r1=radius+wall_thickness, r2=shroud_distance +
-                            wall_thickness, h=inlet_height, center=True)
+                            wall_thickness, h=guard_height, center=True)
     # shroud_solid = forward(2*radius-2*wall_thickness)(shroud_solid)
     # TODO: container_radius in intersect is ideally inf.
     shroud_solid = intersection()(shroud_solid, up(shroud_distance/2 + wall_thickness/2)
@@ -66,7 +66,7 @@ def Spill_Guard(container_top_radius, container_bottom_radius, container_height,
     # TODO: test centering the catch. I prefer radius offset due to fitting the cylinders.
     #       just change to centered by setting this not centered... would look better
     shroud = cylinder(r1=radius, r2=shroud_distance,
-                      h=inlet_height, center=True)
+                      h=guard_height, center=True)
     # shroud = forward(2*radius-2*wall_thickness)(shroud)
     shroud = intersection()(shroud, up(shroud_distance/2+wall_thickness/2)
                             (cube([2*radius, container_top_radius, shroud_distance], center=True)))
@@ -76,7 +76,7 @@ def Spill_Guard(container_top_radius, container_bottom_radius, container_height,
     # move up to simulate the container subtraction
     shroud = up(radius+guard_height)(shroud)
     shroud = forward(radius + 2*wall_thickness)(shroud)
-    shroud = shroud - forward(container_radius)(container)
+    shroud = shroud - forward(container_radius+radius+clip_gap+wall_thickness)(container)
     # move into position atop the catch
     shroud = down(guard_height-wall_thickness)(shroud)
 
@@ -106,14 +106,13 @@ def Spill_Guard(container_top_radius, container_bottom_radius, container_height,
 
     clip = far_clip + bridge + near_clip
     # now rotate the clip to match the bucket angle
-    #clip_angle = degrees(atan((clip_gap/2)/clip_depth))
-    #print("clip angle is:", clip_angle)
-    #clip = rotate([-clip_angle, 0, 0])(clip)
+    clip_angle = degrees(atan(clip_gap/clip_depth))
+    print("clip angle is:", clip_angle)
+    clip = rotate([clip_angle, 0, 0])(clip)
     slope = (container_top_radius - container_bottom_radius) / container_height
     container_angle = degrees(atan(slope))
-    clip = rotate([-container_angle, 0, 0])(clip)
     # make up for the rotation to set clip and catch on spout
-    #clip_offset = clip_gap/2 * cos(radians(clip_angle))
+    # clip_offset = clip_gap/2 * cos(radians(clip_angle))
     clip_offset = clip_gap/2 * cos(radians(container_angle))
     clip = up(clip_offset)(clip)
     catch = up(clip_offset)(catch)

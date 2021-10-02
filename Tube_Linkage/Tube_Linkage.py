@@ -1,3 +1,4 @@
+# NOTE: THIS IS CURRENTLY UNMAINTAINED AND NOT JUSTIFIED EMPIRICALLY. NO PLAN TO FINISH BUT KEPT FOR POSTERITY
 # ball and socket cylinders that snap fit together to protect
 # wiring/tubing from chicken wire in a space efficient way
 from solid import *

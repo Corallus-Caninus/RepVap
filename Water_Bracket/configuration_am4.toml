@@ -1,0 +1,37 @@
+# Water Cooling Bracket Mount
+# configure the bracket by entering a list of lists for each screw position
+# besides that this is a standard parametric design. 
+# measurements are in millimiters
+
+# TODO: make a well documented excel sheet that is read in as CSV 
+#       with dynamic params as a seperate column
+# TODO: or consider a tkinter GUI with photogrammetry for thingiverse. 
+#       assume kids (age 10+) will want these too.
+
+# NOTE: TOML only allows for positional arguments-- 
+#       so make iterable args positional and leave template documentation
+
+# ALUMINUM WATER BLOCK MEASUREMENTS #
+# actual measurements-- not from datsheet due to compounding error with print accuracy.
+# measurements seem consistent across order/manufacturing run, verify over time.
+# consider lowering by a fraction of a millimeter to press down on dye
+# NOTE: z is 11.85 but lowered to set pressure on dye
+rectangle_prism_dimensions = "[43, 43, 10]"
+# can be (1,0) (0,-1) etc. avoid diagonal: (-1, 1)
+nozzle_direction =  "(-1,0)"
+wall_thickness = 2
+
+# SCREW MOBO MEASUREMENTS #
+# TODO: create the AM4 motherboard screws
+screw_args = '''
+[
+{"x": 84, "y": -33, "z": 0, "screw_head_diameter": 4.45, "screw_bolt_diameter": 2,"screw_bolt_depth":  2.4}, 
+{"x": -29.5, "y": 16.28, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7}, 
+{"x": -29.5, "y": -16.28, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7}, 
+]'''
+#{"x": 71.88, "y": -41.5, "z": 0, "screw_head_diameter": 4.45, "screw_bolt_diameter": 2,"screw_bolt_depth":  2.4}, 
+#{"x": -37.891, "y": 14.3, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7}, 
+#{"x": -37.891, "y": -14.3, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7}, 
+#{"x": 37.891, "y": -14.3, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  2}, 
+#{"x": 37.891, "y": 14.3, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  2},
+

@@ -5,7 +5,7 @@
 # the height of the legs, this should be above the 
 # water level (lowest inlet) + bottle_depth to ensure 
 # a siphon is established when water levels drop.
-leg_height = 150
+leg_height = 75 #was 150
 # the camber of the legs in degrees. This 
 # should be a small angle that lowers center 
 # of mass while not significantly reducing height.

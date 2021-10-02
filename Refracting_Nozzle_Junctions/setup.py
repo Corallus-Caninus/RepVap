@@ -2,7 +2,6 @@ import setuptools
 
 # TODO: remove this and extract junctions up a level. 
 #       Python package structure is... weird. 
-#       Need to button this up for pub release 
 
 setuptools.setup(
     name="RefractingNozzleJunctions", 

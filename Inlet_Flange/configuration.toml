@@ -18,16 +18,18 @@ radius = 12.66
 
 # the gap of the bucket wall (container thickness) can also be negative to set pressure on cone
 # actual measurment of lowes bucket: 2.5
-fastner_gap = 1.75 #TODO: for some reason this is larger in the model
+#fastner_gap = 1.75 #TODO: for some reason this is larger in the model. leaky
+fastner_gap = 0.1
 
 tab_width = 12
 tab_length = 2.5
 tab_thickness = 1
+# tab_angle = 85    #degrees
 tab_angle = 85    #degrees
 # generally should be half tab_width
-num_tabs = 7
 
-#NOTE: this is subtractive so high values will increase pressure loss by this amount. 
+num_tabs = 15
+#NOTE: this is subtractive so high values will increase pressure loss by this amount.
 wall_thickness = 3.25
 
 flange_thickness = 7 #must be greater than wall thickness TODO: make this additive to wall thickness in scad

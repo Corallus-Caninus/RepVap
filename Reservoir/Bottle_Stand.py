@@ -33,7 +33,7 @@ def bottle_stand(leg_height, leg_camber, wall_thickness, nozzle_diameter, nozzle
                              h=bottle_depth, center=True)
     # hole here since legs may jut
     orifice = orifice_solid - hole()(cylinder(r=bottle_diameter /
-                                       2, h=bottle_depth, center=True))
+                                              2, h=bottle_depth, center=True))
     # raise orifice to leg stand height
     orifice = up(leg_height+bottle_depth/2)(orifice)
 
@@ -42,7 +42,7 @@ def bottle_stand(leg_height, leg_camber, wall_thickness, nozzle_diameter, nozzle
                             r2=bottle_diameter/2 + wall_thickness, h=nozzle_depth, center=True)
     # hole here since legs may jut
     throat = throat_solid - hole()(cylinder(r1=nozzle_diameter/2,
-                                     r2=bottle_diameter/2, h=nozzle_depth, center=True))
+                                            r2=bottle_diameter/2, h=nozzle_depth, center=True))
     throat = up(leg_height-nozzle_depth/2)(throat)
 
     # create tripod base
@@ -54,15 +54,6 @@ def bottle_stand(leg_height, leg_camber, wall_thickness, nozzle_diameter, nozzle
     # solve the intersection of the leg with the orifice penetrating wall_thickness
     leg = cylinder(r=wall_thickness, h=leg_height +
                    wall_thickness, center=True)
-    # TODO: adjust screw params for precision of print, possibly extract parameter
-    # TODO: consider a hilt for the screw. Probably not necessary.
-    # NOTE: pitch is 1 full screw rotation here divid for freq
-    # TODO: -0.1 to patch seam artifact isnt good much bad. 
-    #       FIX THIS. BAD PARAMETERIZATION OF MODELS IS CONSTANTS 
-    #       THEY WILL NEVER PARAMETER SWEEP SUCCESSFULLY.
-    #   inner_rad must be > tooth_depth?
-    # TODO: EPSILON
-    # TODO: integrate leg and forget screw height of bottle is enough head
     leg = rotate([0, -leg_camber, 0])(up(leg_height /
                                          2+wall_thickness)(leg))
     leg = leg - hole()(base_plate)
@@ -70,8 +61,20 @@ def bottle_stand(leg_height, leg_camber, wall_thickness, nozzle_diameter, nozzle
     legs += rotate(120)(legs)
     legs += rotate(240)(legs)
 
+    # create a hook along the orifice used to loop the tubing around
+    # TODO: this isn't necessary at the moment since the tubing has to 
+    #       go up and into the gutter in the same siphoning twist.
+    hook_solid = cylinder(r=wall_thickness, h=leg_height +
+                          wall_thickness, center=True)
+    hook_solid = rotate([0, -leg_camber, 0])(up(leg_height /
+                                                2+wall_thickness)(hook_solid))
+    hook_solid = hook_solid - hole()(base_plate)
+    hook = right(rotation_offset_x + bottle_diameter/2)(hook_solid)
+    hook += rotate(120)(hook)
+    hook += rotate(240)(hook)
+
     stand = orifice + throat + legs
-    return stand 
+    return stand
 
 
 def render_object(render_object, filename):
@@ -81,10 +84,11 @@ def render_object(render_object, filename):
         render_object: the OpenSCAD object
         filename: a string for the file to be saved
     '''
-    scad_render_to_file(render_object, filename + ".scad")
+    scad_render_to_file(render_object, filename +
+                        ".scad", file_header='$fn=200;')
     # render with OpenSCAD
     print("Openscad is now rendering the solution..")
-    os.system("start ../OpenSCAD/openscad.exe -o " +
+    os.system("/home/bada/Desktop/code/openscad/openscad -o " +
               filename + ".stl " + filename + ".scad")
 
 

@@ -9,8 +9,11 @@ import os
 # for now may be able to union two water_mounts with identical screw_args, just need to
 # ensure can drive screws
 
-# TODO: screw down fasteners for OD of tubing to assist with ribbing of nozzles. Prioritize failsafing
-#       in 3d print design (build stays cheap). This is lowest priority.
+# NOTE: it is highly recommended to zip tie the nozzles to the Aluminum cooling plates
+
+# TODO: drop down feet that connect through to the cooling plate for aluminum foil conductors (vrms, vram, regulator etc.)
+
+# TODO: pagoda fasteners instead of screws for mobo chipsets (pass as an boolean param)
 
 
 def mount_side_nozzles(**argv):
@@ -112,15 +115,15 @@ def mount_side_nozzles(**argv):
                        pillar_height], center=True)
 
         # gusset increases strength on either side of the screw port
-        # TODO: consider a seperate param for wall_thickness or parameterize by screw params
         gusset = cube([wall_thickness/2,
                       2*wall_thickness+screw['screw_head_diameter'], pillar_height], center=True)
         gusset = back(wall_thickness/2)(gusset)
 
-        front_gusset = left(screw['screw_head_diameter']/2 + wall_thickness/4)(gusset)
-        back_gusset = right(screw['screw_head_diameter']/2 + wall_thickness/4)(gusset)
+        front_gusset = left(
+            screw['screw_head_diameter']/2 + wall_thickness/4)(gusset)
+        back_gusset = right(
+            screw['screw_head_diameter']/2 + wall_thickness/4)(gusset)
 
-        # TODO: just extrude this distance? really large with small hinge
         front_gusset = forward(screw['screw_head_diameter'])(front_gusset)
         back_gusset = forward(screw['screw_head_diameter'])(back_gusset)
 
@@ -183,10 +186,12 @@ def render_object(render_object, filename):
         render_object: the OpenSCAD object
         filename: a string for the file to be saved
     '''
-    scad_render_to_file(render_object, filename + ".scad")
+    scad_render_to_file(render_object, filename +
+                        ".scad", file_header='$fn=200;')
     # render with OpenSCAD
     print("Openscad is now rendering the solution..")
-    os.system("start ../OpenSCAD/openscad.exe -o " +
+    # os.system("/home/bada/Desktop/code/openscad/openscad -o " +
+    os.system("openscad -o " +
               filename + ".stl " + filename + ".scad")
 
 

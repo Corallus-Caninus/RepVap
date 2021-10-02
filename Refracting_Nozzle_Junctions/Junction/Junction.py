@@ -3,12 +3,11 @@ from solid.utils import *
 import toml
 import os
 
-# TODO: this may be more readable as all one emitter plumbing class but this works.
 
 def create_junction(isCross, tube_diameter, wall_thickness, length):
     '''
     creates a T or + junction for putting sequences of nozzles 
-    in parallel or general plumbing. 
+    in parallel or general plumbing and a psuedo inline distribution block. 
     walls are subtractive for tube fitting (constrains flow, losses pressure)
     '''
 

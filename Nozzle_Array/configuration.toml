@@ -14,16 +14,24 @@
 initial_radius = 80
 #final_radius = 115 #was 135
 final_radius = 135 #was 135
-nozzle_diameter = 2 #0.8
+nozzle_diameter = 1.5 #2 #0.8
 nozzle_wall_thickness = 1
-drop_down_depth = 8
+drop_down_depth = 1
 
 max_segment_size = 150
 # PVC tube inteconnect diameter between nozzle arrays
 tube_diameter = 7.6 # was 8 was 7.8
 # thickness of the expanding cone to grip the tube
-pagoda_thickness = 1.5 # was 1.8
+pagoda_thickness = 1.2 # was 1.8
+
+#the distance the fastener will travel 
+#(thickness of the lid of the container)
+fastener_gap = 4
+#the diameter of the hole
+fastener_thickness = 4.7
+#the diameter of the cone that will snap in the hole
+fastener_diameter = 6.25
 
 # wall_thickness = 4.5
-wall_thickness = 2.5
-array_spacing = 10
+wall_thickness = 4.5
+array_spacing = 5

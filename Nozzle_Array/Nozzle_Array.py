@@ -26,7 +26,9 @@ import turtle
 
 def bucket_emitter_array(
         initial_radius, final_radius, nozzle_diameter, nozzle_wall_thickness,
-        max_segment_size, drop_down_depth, tube_diameter, pagoda_thickness, wall_thickness, array_spacing):
+        max_segment_size, drop_down_depth, tube_diameter, pagoda_thickness, 
+        fastener_gap, fastener_thickness, fastener_diameter,
+        wall_thickness, array_spacing):
     '''
     PARAMETERS:
         intial_radius:
@@ -108,7 +110,9 @@ def bucket_emitter_array(
         disk_partition, cur_nozzle_area, sweep = build_disk_partition(
             segment_radius,
             drop_down_depth, nozzle_diameter, nozzle_wall_thickness,
-            tube_diameter, max_segment_size, pagoda_thickness, wall_thickness)
+            tube_diameter, max_segment_size, pagoda_thickness, 
+            fastener_gap, fastener_thickness, fastener_diameter,
+            wall_thickness)
         total_nozzle_area = total_nozzle_area + cur_nozzle_area*num_segments
 
         # DRAW THIS DISK AND ALL SEGMENTS WITH TURTLE
@@ -138,6 +142,7 @@ def bucket_emitter_array(
                 segment_radius,
                 drop_down_depth, nozzle_diameter, nozzle_wall_thickness,
                 tube_diameter, max_segment_size, pagoda_thickness,
+                fastener_gap, fastener_thickness, fastener_diameter,
                 wall_thickness, True)
             filename = "ENDCAP_x1" + "_nozzle_arc" + str(index+1)
             scad_render_to_file(capped_disk_partition, filename+".scad")
@@ -149,7 +154,7 @@ def bucket_emitter_array(
             "_nozzle_arc"+str(index+1)
         scad_render_to_file(disk_partition, filename+".scad")
         os.system("openscad -o " +
-                    filename + ".stl " + filename + ".scad &")
+                  filename + ".stl " + filename + ".scad &")
 
         # iterate the disk to the next radii
         disk_minor_radius = disk_major_radius
@@ -172,6 +177,7 @@ def bucket_emitter_array(
 def build_disk_partition(segment_radius,
                          drop_down_depth, nozzle_diameter, nozzle_wall_thickness,
                          tube_diameter, max_segment_size, pagoda_thickness,
+                         fastener_gap, fastener_thickness, fastener_diameter,
                          wall_thickness, final=False):
     '''
     builds a single array segment of a disk.
@@ -194,6 +200,29 @@ def build_disk_partition(segment_radius,
     solid_disk_partition = rotate_extrude(sweep, 1, segments=200)(solid_hull)
     disk_partition = rotate_extrude(sweep, 1, segments=200)(hull)
     disk_partition = solid_disk_partition - hole()(disk_partition)
+
+    # PAGODA FASTENER #
+    assert(fastener_thickness < fastener_diameter)
+    # now we place snap ons atop the disk_partition, one at either end
+    pagoda_fastener = cylinder(
+        r=fastener_thickness/2, h=fastener_gap, center=True)
+    # TODO: pagoda_fastener needs four slices subtracted to allow cone to flex so
+    #      non flexible mounts can be implemented (flex onto motherboard etc.)
+    # place a cone of pagoda_thickness atop the pagoda fastener
+    pagoda_fastener += translate([0, 0, -fastener_gap/2 - fastener_thickness/2])(
+        cylinder(r1=0, r2=fastener_diameter/2, h=fastener_thickness, center=True))
+
+    # now we place the snap ons atop the disk_partition
+    pagoda_fastener = right(
+        segment_radius + fastener_thickness/4 + tube_diameter/2 + wall_thickness/2)(pagoda_fastener)
+    pagoda_fastener = translate([0, 0, -fastener_gap/2])(pagoda_fastener)
+    # here we will rotate not extrude to either end of the disk_partition
+    far_end_pagoda_fastener = rotate(sweep - fastener_diameter/4)(pagoda_fastener)
+    pagoda_fastener = rotate(tube_diameter/4)(pagoda_fastener)
+
+    # now place the pagoda fasteners at the end of the disk_partition
+    disk_partition = disk_partition + far_end_pagoda_fastener
+    disk_partition = disk_partition + pagoda_fastener
 
     # EMITTER HULL #
     # frustrum with angle from wall_thickness to tube_diameter.

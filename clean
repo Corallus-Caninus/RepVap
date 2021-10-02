@@ -1,0 +1,20 @@
+#!/bin/bash
+#first, warn the user that this will delete all dot files, .swp .png .stl and .scad files for ALL PROJECTS. if they type yes then continue
+echo "WARNING: This will delete all dot files, ~ files, gcode, .swp, .png, .stl and .scad files for ALL SUBPROJECTS."
+read -p "Are you sure you want to continue? 
+(y/n)" -n 1 -r
+echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    echo "Deleting all dot files, .swp .png .stl and .scad files for ALL PROJECTS.."
+    find . -name "*.swp" -delete &
+    find . -name "*.png" -delete &
+    find . -name "*.stl" -delete &
+    find . -name "*.scad" -delete &
+    find . -name ".*" -delete &
+    find . -name "*~" -delete &
+    find . -name "*.gcode" -delete
+    echo "Done."
+else
+    echo "Exiting without changing files.."
+fi
