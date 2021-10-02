@@ -4,6 +4,18 @@ A *majority* 3D printed evaporative cooler.
 This project is currently under active development. I have a working RepVap but you may need assistance.
 Email me at ward.joshua92@yahoo.com.
 
+requires OpenSCAD and python3 as well as solidpython.
+essentially on ubuntu:
+
+
+apt install openscad
+
+apt install python3
+
+pip install solidpython
+
+
+
 Each folder contains a configuration file and a python file. Set the values in the configuration.toml then 
 run the python program to generate your STls. A guide on building a RepVap out of a 5 gallon bucket is 
 under development.
