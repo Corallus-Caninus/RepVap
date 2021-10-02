@@ -41,7 +41,7 @@ def render_object(render_object, filename):
     scad_render_to_file(render_object, filename + ".scad")
     # render with OpenSCAD
     print("Openscad is now rendering the solution..")
-    os.system("start ../OpenSCAD/openscad.exe -o " +
+    os.system("openscad -o " +
               filename + ".stl " + filename + ".scad")
 
 

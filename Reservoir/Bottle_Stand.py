@@ -88,7 +88,7 @@ def render_object(render_object, filename):
                         ".scad", file_header='$fn=200;')
     # render with OpenSCAD
     print("Openscad is now rendering the solution..")
-    os.system("/home/bada/Desktop/code/openscad/openscad -o " +
+    os.system("openscad -o " +
               filename + ".stl " + filename + ".scad")
 
 
