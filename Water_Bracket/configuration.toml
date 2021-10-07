@@ -17,7 +17,28 @@ rectangle_prism_dimensions = "[43, 43, 10]"
 nozzle_direction =  "(-1,0)"
 wall_thickness = 2
 
+#determines whether we will use through holes for screws or pagoda fasteners.
+is_pagoda = "True"
+#the radius of the pagoda cone that will snap through the hole mounts.
+pagdoda_thickness = 1.1
+
+
+# if pagoda is true, screw_bolt_depth is depth of the pagoda, screw_head_diameter is the base of the 
+# pagoda cones and screw_bolt_diameter is the diameter of the cylinder the pagodas rest on.
+# this means that generally only screw head diameter needs to be changed when reconfiguring screws to pagodas.
+
+# TODO: rename screw_*_* to be more ubiquitous.
+
 # SCREW MOBO MEASUREMENTS #
+# screw_args = '''
+# [
+#     {"x": -25, "y": -25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
+#     {"x": 25, "y": -25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
+#     {"x": 25, "y": 25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
+#     {"x": -25, "y": 25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
+# ]'''
+
+
 screw_args = '''
 [
     {"x": -25, "y": -25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
@@ -25,4 +46,3 @@ screw_args = '''
     {"x": 25, "y": 25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
     {"x": -25, "y": 25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
 ]'''
-

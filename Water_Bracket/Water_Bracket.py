@@ -53,7 +53,7 @@ def mount_side_nozzles(**argv):
             blocks and motherboards.
     '''
     # TODO: this is a positional implementation of keyword params...
-    rectangle_prism_dimensions, nozzle_direction, wall_thickness, screw_args = argv.values()
+    rectangle_prism_dimensions, nozzle_direction, wall_thickness, is_pagoda, pagoda_thickness, screw_args = argv.values()
 
     # evaluate nested parameters
     rectangle_prism_dimensions = eval(rectangle_prism_dimensions)
@@ -91,8 +91,13 @@ def mount_side_nozzles(**argv):
               str(angle) + '...')
         print('translating this mount point into position with magnitude: ' +
               str(screw_translate_distance))
+        if is_pagoda:
+            print('as a pagoda fastener..')
+        else:
+            print('as a through hole screw..')
+        print('\n')
 
-        # TODO: extract to function since will be using similar for VRM aluminum foil conductors
+        # TODO: extract to function since will be using similar for VRM aluminum foil conductors and pagodas, really just swapping feet.
         # overhang reaches from middle of cooling block to the edge of the screw
         overpass = cube([
             # screw['screw_head_diameter'],
@@ -137,8 +142,45 @@ def mount_side_nozzles(**argv):
         # NOTE: wall thickness here goes into pillar
         footer = cube([screw['screw_head_diameter'], screw['screw_head_diameter']+wall_thickness,
                        screw['screw_bolt_depth']/2], center=True)
-        footer = footer - cylinder(r=screw['screw_bolt_diameter']/2,
-                                   h=screw['screw_bolt_depth']/2, center=True, segments=200)
+        if is_pagoda is False:
+            # create a normal pass through hole for a screw
+            screw_hole = cylinder(r=screw['screw_bolt_diameter']/2,
+                                  h=screw['screw_bolt_depth']/2, center=True, segments=200)
+            footer = footer - screw_hole
+        else:
+            # build the pagoda fastener
+            pagoda = cylinder(r=screw['screw_bolt_diameter']/2,
+                              h=screw['screw_bolt_depth'], center=True, segments=200)
+            # each pagoda cone in the sequence is an equilateral cone
+            for i in range(int(screw['screw_bolt_depth']/screw['screw_bolt_diameter'])):
+                print('building pagoda cone: ' + str(i))
+                # TODO: maybe screw_bolt_diameter/2 instead for height? dont want more than 45 degree angle
+                pagoda_cone = cylinder(r2=screw['screw_bolt_diameter']/2 + pagoda_thickness, r1=0,
+                                       h=screw['screw_bolt_diameter'], center=True, segments=200)
+
+                # subtract the cone from a quadrant of rectangular prisms along 3/4 of the main stem
+                # to create hinges for the pagoda cones.
+                subtract_flex = cube(
+                    [screw['screw_bolt_diameter']/2 + pagoda_thickness, 2*screw['screw_bolt_diameter']/3, screw['screw_bolt_diameter']], center=True)
+                subtract_flex = right(
+                    screw['screw_bolt_diameter'] + pagoda_thickness/2)(subtract_flex)
+                # pagodas go at the bottom third of the stem
+                subtract_flex = up(
+                    screw['screw_bolt_diameter']/2)(subtract_flex)
+                for i in range(4):
+                    subtract_flex = subtract_flex + rotate(90)(subtract_flex)
+
+                # center the subtracting flexular joints by shifting them into place to the pagoda cone.
+                pagoda_cone = pagoda_cone - \
+                    down(screw['screw_bolt_diameter']/3)(subtract_flex)
+
+                # move each pagoda cone along the main stem into position
+                pagoda_cone = up(screw['screw_bolt_depth']/2)(
+                    down(i*screw['screw_bolt_diameter'])(pagoda_cone))
+
+                pagoda = pagoda + pagoda_cone
+
+            footer = footer + down(screw['screw_bolt_depth']/2)(pagoda)
 
         # center to xy plane
         footer = up(screw['screw_bolt_depth']/4)(footer)

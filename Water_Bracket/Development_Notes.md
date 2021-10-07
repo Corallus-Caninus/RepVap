@@ -15,6 +15,13 @@ off pump or the buckets can just fill if not set upside down. alarm should exist
 hydro-electric system that isnt >IPX2 rated.
 
 # RESEARCH
+How can SCAD use the power of programming (encapsulation abstraction etc) to make ubiquitous models. 
+Why aren't there more libraries for ease of use that would catch up to ease of GUI CAD programs?
+Could a graphical programming interface (vr/ar) make this intuitive? (with 3D render feedback in VR)?
+could use autocomplete AI for writting libraries called in a node-red manner but build with graphical
+programming in mind (making it more intuitive to use more advanced programatic features such as encapsulation)
+    node-red tree is CSG tree but can be functionally abstract
+
 A GUI that creates all 3D print files(Block Harness, VRM Connection Harness, Board Risers),
 SVGs and a step by step guide on how-to put together the water cooling solution.
 This can be seperate from evaporative cooler since people run water coolers with
