@@ -17,3 +17,4 @@ cd Nozzle_Array && python3 Nozzle_Array.py && cd .. &
 cd Reservoir && python3 Bottle_Stand.py && cd .. &
 cd Spill_Guard && python3 Spill_Guard.py && cd .. &
 cd Tube_Linkage && python3 Tube_Linkage.py && cd .. &
+cd Water_Bracket && python3 Water_Bracket.py && cd .. &
