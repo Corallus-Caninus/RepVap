@@ -7,42 +7,38 @@
 #       with dynamic params as a seperate column
 # TODO: or consider a tkinter GUI with photogrammetry for thingiverse. 
 #       assume kids (age 10+) will want these too.
+# TODO: recreate am4 for just a water block
 
 # NOTE: TOML only allows for positional arguments-- 
 #       so make iterable args positional and leave template documentation
 
+# NOTE: current configuration is for a water-peltier cooling cube 
+
 # ALUMINUM WATER BLOCK MEASUREMENTS #
-rectangle_prism_dimensions = "[43, 43, 10]"
-# can be (1,0) (0,-1) diagonal: (-1, 1) etc.
-nozzle_direction =  "(-1,0)"
+# actual measurements-- not from datsheet due to compounding error with print accuracy.
+# measurements seem consistent across order/manufacturing run, verify over time.
+# consider lowering by a fraction of a millimeter to press down on dye
+# NOTE: z is 11.85 but lowered to set pressure on dye
+# ORIGINAL #
+# rectangle_prism_dimensions = "[43, 43, 10]" #for non cube standard 40mm water block
+rectangle_prism_dimensions = "[71.4, 71.4, 0.75]"
+# can be (1,0) (0,-1) etc. avoid diagonal: (-1, 1)
+# nozzle_direction =  "(-1,0)" #for non cube standard 40mm water block
+nozzle_direction = "(0,0)" #we dont use outlets on the prism since this thing is huge
+
 wall_thickness = 2
 
-#determines whether we will use through holes for screws or pagoda fasteners.
-is_pagoda = "True"
-#the radius of the pagoda cone that will snap through the hole mounts.
-pagdoda_thickness = 1.1
-
-
-# if pagoda is true, screw_bolt_depth is depth of the pagoda, screw_head_diameter is the base of the 
-# pagoda cones and screw_bolt_diameter is the diameter of the cylinder the pagodas rest on.
-# this means that generally only screw head diameter needs to be changed when reconfiguring screws to pagodas.
-
-# TODO: rename screw_*_* to be more ubiquitous.
+#determines whether we will use through holes for screws like CPUs or pagoda fasteners like chipsets.
+is_pagoda = "False"
+#the radius of the pagoda cone that will snap through the hole mounts. ignored if is_pagoda is false.
+pagdoda_thickness = 1
 
 # SCREW MOBO MEASUREMENTS #
-# screw_args = '''
-# [
-#     {"x": -25, "y": -25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
-#     {"x": 25, "y": -25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
-#     {"x": 25, "y": 25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
-#     {"x": -25, "y": 25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
-# ]'''
-
-
+# if using standard water block set z to 0
 screw_args = '''
 [
-    {"x": -25, "y": -25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
-    {"x": 25, "y": -25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
-    {"x": 25, "y": 25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
-    {"x": -25, "y": 25, "z": 0, "screw_head_diameter": 5.95, "screw_bolt_diameter": 1.33,"screw_bolt_depth":  4},
+{"x": -27.09, "y": 45, "z": -41, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8}, 
+{"x": -27.09, "y": -45, "z": -41, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8}, 
+{"x": 27.09, "y": -45, "z": -41, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8}, 
+{"x": 27.09, "y": 45, "z": -41, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8},
 ]'''

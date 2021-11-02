@@ -16,7 +16,37 @@ import os
 # TODO: pagoda fasteners instead of screws for mobo chipsets (pass as an boolean param)
 
 
-def mount_side_nozzles(**argv):
+# def mount_side_nozzles(**argv):
+# rectangle_prism_dimensions = "[71.4, 71.4, 0.75]"
+# # can be (1,0) (0,-1) etc. avoid diagonal: (-1, 1)
+# nozzle_direction =  "(-1,0)"
+# # ORIGINAL #
+# # wall_thickness = 2
+# wall_thickness = 4
+
+# #determines whether we will use through holes for screws or pagoda fasteners.
+# is_pagoda = "False"
+# #the radius of the pagoda cone that will snap through the hole mounts.
+# pagdoda_thickness = 0
+
+# # SCREW MOBO MEASUREMENTS #
+# # TODO: create the AM4 motherboard screws
+# # ORIGINAL #
+# # screw_args = '''
+# # [
+# # {"x": 84, "y": -33, "z": 0, "screw_head_diameter": 4.45, "screw_bolt_diameter": 2,"screw_bolt_depth":  2.4},
+# # {"x": -29.5, "y": 16.28, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7},
+# # {"x": -29.5, "y": -16.28, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7},
+# # ]'''
+# screw_args = '''
+# [
+# {"x": 71.88, "y": -41.5, "z": 41, "screw_head_diameter": 4.45, "screw_bolt_diameter": 2,"screw_bolt_depth":  2.4},
+# {"x": -37.891, "y": 14.3, "z": 41, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7},
+# {"x": -37.891, "y": -14.3, "z": 41, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7},
+# {"x": 37.891, "y": -14.3, "z": 41, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  2},
+# {"x": 37.891, "y": 14.3, "z": 41, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  2},
+# ]'''
+def mount_side_nozzles(rectangle_prism_dimensions, nozzle_direction, wall_thickness, screw_args, is_pagoda, pagdoda_thickness):
     # rectangle_prism_dimensions, nozzle_direction, wall_thickness,
     #                      screw_args):
     '''
@@ -53,7 +83,15 @@ def mount_side_nozzles(**argv):
             blocks and motherboards.
     '''
     # TODO: this is a positional implementation of keyword params...
-    rectangle_prism_dimensions, nozzle_direction, wall_thickness, is_pagoda, pagoda_thickness, screw_args = argv.values()
+    # rectangle_prism_dimensions, nozzle_direction, wall_thickness, is_pagoda, pagoda_thickness, screw_args = argv.values()
+    print("mount_side_nozzles:", rectangle_prism_dimensions, nozzle_direction,
+          wall_thickness, is_pagoda, pagdoda_thickness, screw_args)
+    # cast is_pagoda to boolean
+    if is_pagoda == "True":
+        is_pagoda = True
+    else:
+        is_pagoda = False
+    print("is pagoda:", is_pagoda)
 
     # evaluate nested parameters
     rectangle_prism_dimensions = eval(rectangle_prism_dimensions)
@@ -61,24 +99,44 @@ def mount_side_nozzles(**argv):
     screw_args = eval(screw_args)
 
     # build the initial mount
+    # TODO: TEST
     mount_height = rectangle_prism_dimensions[2] + 2*wall_thickness
-    inner = cube(rectangle_prism_dimensions, center=True)
-    outer = cube(
-        [rectangle_prism_dimensions[0] + 2*wall_thickness, rectangle_prism_dimensions[1] + 2*wall_thickness,
-         mount_height], center=True)
 
     # erase an opening face for the nozzles by scrubing over a translation
     opening = translate([nozzle_direction[0]*wall_thickness,
-                         nozzle_direction[1]*wall_thickness, 0])(inner)
+                         nozzle_direction[1]*wall_thickness, 0])(cube(rectangle_prism_dimensions, center=True))
+    # inner = cube(rectangle_prism_dimensions, center=True)
+    # same as above but also subtract if z is negative as done here:
+    # also move up by the screw_arg z values if its negative
+    if min([screw_arg["z"] for screw_arg in screw_args]) < 0:
+        # increase rectangle_prism_dimensions[2] by the negative z value
+        rectangle_prism_dimensions[2] +=  \
+            -1*min([screw_arg["z"] for screw_arg in screw_args])
+        inner = cube(rectangle_prism_dimensions, center=True)
+        # move by the negative z value
+        inner = translate([0, 0, min([screw_arg["z"]
+                          for screw_arg in screw_args])/2 - wall_thickness])(inner)
+        # also translate opening
+        opening = translate([0, 0, min([screw_arg["z"]
+                                        for screw_arg in screw_args])/2])(opening)
+    else:
+        inner = cube(rectangle_prism_dimensions, center=True)
+
+    outer = cube(
+        [rectangle_prism_dimensions[0] + 2*wall_thickness, rectangle_prism_dimensions[1] + 2*wall_thickness,
+         mount_height], center=True)
 
     mount_hull = outer - hole()(inner)
     # open up the nozzle face
     mount = mount_hull - hole()(opening)
     # drop the bottom out
-    mount = mount - hole()(translate([0, 0, -2*wall_thickness])(inner))
-    mount = mount - hole()(translate([nozzle_direction[0]*2*wall_thickness,
-                                      nozzle_direction[1]*2*wall_thickness, -2*wall_thickness])(inner))
     mount = up(mount_height/2)(mount)
+
+    # also move up by the screw_arg z values if its negative
+    if min([screw_arg["z"] for screw_arg in screw_args]) < 0:
+        mount = translate([0, 0, -1*min([screw_arg["z"]
+                          for screw_arg in screw_args])])(mount)
+
     # TODO: consider a nozzle seperator to prevent sliding out from nozzle end, shouldnt matter
     #       because of the tightness but the engineer in me say do it.
     # TODO: build a splash guard around tubing given nozzle parameters
@@ -110,6 +168,10 @@ def mount_side_nozzles(**argv):
 
         # raise to top of mount
         overpass = up(mount_height)(overpass)
+        # also move up overpass just like mount
+        if min([screw_arg["z"] for screw_arg in screw_args]) < 0:
+            overpass = translate(
+                [0, 0, -1*min([screw_arg["z"] for screw_arg in screw_args])])(overpass)
 
         # shift for rotation
         overpass = forward(screw_translate_distance/2)(overpass)
@@ -143,11 +205,13 @@ def mount_side_nozzles(**argv):
         footer = cube([screw['screw_head_diameter'], screw['screw_head_diameter']+wall_thickness,
                        screw['screw_bolt_depth']/2], center=True)
         if is_pagoda is False:
+            print('building screw hole...')
             # create a normal pass through hole for a screw
             screw_hole = cylinder(r=screw['screw_bolt_diameter']/2,
                                   h=screw['screw_bolt_depth']/2, center=True, segments=200)
             footer = footer - screw_hole
         else:
+            # TODO: check if pagodas stack and make the parameters robust to sweeping
             # build the pagoda fastener
             pagoda = cylinder(r=screw['screw_bolt_diameter']/2,
                               h=screw['screw_bolt_depth'], center=True, segments=200)
@@ -192,6 +256,8 @@ def mount_side_nozzles(**argv):
 
         # rotate the solution
         overpass = rotate(angle)(overpass)
+        # remove the volume that will hold the cooling block
+        overpass = overpass - hole()(inner)
 
         mount += overpass
 
