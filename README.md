@@ -20,6 +20,22 @@ Each folder contains a configuration file and a python file. Set the values in t
 run the python program to generate your STls. A guide on building a RepVap out of a 5 gallon bucket is 
 under development.
 
+Suggested Slicing:
+
+It is recommended to print with adaptive layering with tree supports only touching the bed to allow for precision on the print where needed.
+These models were sliced in Cura.
+
+# INLET FLANGE
+Print standing up so the grooves are printed along the z axis.
+
+# NOZZLE ARRAY
+Print with adaptive layering and a low layer height. Reduce the layer width slightly (ex: 0.35mm on 0.4mm diameter nozzle)
+nozzles should be touching the bed, this makes the pagoda cones a little difficult (adaptive layering helps) but yields better nozzles.
+
+# WATER BRACKET
+Print with the screw mounts touching the bed. Ensure good overlap with infill so the screw mounts dont seperate when threaded through.
+
+
 RepVap is a high flow water chiller for cheap aluminum cooling blocks. Its intended use is for 
 CPUs and the design is made to be very affordable (~$100 for all the bells and whistles).
 
