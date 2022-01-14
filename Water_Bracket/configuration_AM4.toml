@@ -1,0 +1,24 @@
+# AM4 MEASUREMENTS:
+
+# ALUMINUM WATER BLOCK MEASUREMENTS #
+rectangle_prism_dimensions = "[43, 43, 10]" #for non cube standard 40mm water block
+
+# AM4 MEASUREMENTS:
+nozzle_direction =  "(-1,0)" #for standard 40mm water block, alter this for your prefence
+
+wall_thickness = 2
+
+#determines whether we will use through holes for screws like CPUs or pagoda fasteners like chipsets.
+is_pagoda = "False"
+#the radius of the pagoda cone that will snap through the hole mounts. ignored if is_pagoda is false.
+pagdoda_thickness = 1
+
+# SCREW MOBO MEASUREMENTS #
+# AM4 MEASUREMENTS:
+screw_args = '''
+[
+{"x": -25.7109, "y": 42.7091, "z": 0, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8}, 
+{"x": -25.7109, "y": -42.7091, "z": 0, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8}, 
+{"x": 25.7109, "y": -42.7091, "z": 0, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8}, 
+{"x": 25.7109, "y": 42.7091, "z": 0, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8},
+]'''
