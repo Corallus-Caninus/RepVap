@@ -69,7 +69,7 @@ def Inlet_Flange(container_top_radius, container_bottom_radius, container_height
 
     outer_flange = outer_flange + catch
 
-    return outer_flange  # , inner_flange
+    return outer_flange
 
 
 def render_object(render_object, filename):
@@ -89,7 +89,5 @@ def render_object(render_object, filename):
 
 if __name__ == "__main__":
     config = toml.load("configuration.toml")
-    # outer, inner = Inlet_Flange(**config)
     outer = Inlet_Flange(**config)
     render_object(outer, "outer_flange")
-    # render_object(inner, "inner_flange")
