@@ -26,7 +26,7 @@ import turtle
 
 def bucket_emitter_array(
         initial_radius, final_radius, nozzle_diameter, nozzle_wall_thickness,
-        max_segment_size, drop_down_depth, tube_diameter, pagoda_thickness, 
+        max_segment_size, drop_down_depth, tube_diameter, pagoda_thickness,
         fastener_gap, fastener_thickness, fastener_diameter,
         wall_thickness, array_spacing):
     '''
@@ -77,7 +77,7 @@ def bucket_emitter_array(
     turtle.circle(initial_radius)    # Draw a circle
     turtle.penup()      # Pen up while we go home
 
-    # NOTE: insert assertions as geometry artifacts are
+    # TODO: insert assertions as geometry artifacts are
     #       found that are within build parameterization
 
     # calculate the number of concentric circles given the platter (lid)
@@ -101,16 +101,16 @@ def bucket_emitter_array(
         disk_circumference = 2*pi*segment_radius
         # calculate the number of segments, we assume tube is flexible enough that each segment will
         # only need spacing of tube_diameter to interconnect between nozzles (not to be confused with
-        # rray spacing). tube connector nozzles will be length
+        # array spacing). tube connector nozzles will be length
         # of tube diameter. wall thickness is flange width
         num_segments = int(disk_circumference /
-                           (max_segment_size + 4*tube_diameter + wall_thickness)) + 1
+                           (max_segment_size + 4*tube_diameter + wall_thickness))
 
         print("constructing disk partition with radius " + str(segment_radius))
         disk_partition, cur_nozzle_area, sweep = build_disk_partition(
             segment_radius,
             drop_down_depth, nozzle_diameter, nozzle_wall_thickness,
-            tube_diameter, max_segment_size, pagoda_thickness, 
+            tube_diameter, max_segment_size, pagoda_thickness,
             fastener_gap, fastener_thickness, fastener_diameter,
             wall_thickness)
         total_nozzle_area = total_nozzle_area + cur_nozzle_area*num_segments
@@ -217,7 +217,8 @@ def build_disk_partition(segment_radius,
         segment_radius + fastener_thickness/4 + tube_diameter/2 + wall_thickness/2)(pagoda_fastener)
     pagoda_fastener = translate([0, 0, -fastener_gap/2])(pagoda_fastener)
     # here we will rotate not extrude to either end of the disk_partition
-    far_end_pagoda_fastener = rotate(sweep - fastener_diameter/4)(pagoda_fastener)
+    far_end_pagoda_fastener = rotate(
+        sweep - fastener_diameter/4)(pagoda_fastener)
     pagoda_fastener = rotate(tube_diameter/4)(pagoda_fastener)
 
     # now place the pagoda fasteners at the end of the disk_partition
@@ -226,7 +227,7 @@ def build_disk_partition(segment_radius,
 
     # EMITTER HULL #
     # frustrum with angle from wall_thickness to tube_diameter.
-    # doesnt need to be offset since we can just offset x coords
+    # offset is done here but may be more readable as a translation
     frustrum = polygon(
         [
             [segment_radius + wall_thickness/2, tube_diameter + drop_down_depth],
@@ -256,7 +257,7 @@ def build_disk_partition(segment_radius,
     # 1-dimension cross-section analysis of how many nozzle sectors will fill the disk_segment
 
     num_nozzle_sectors = int(
-        tube_diameter/(nozzle_diameter + 2*nozzle_wall_thickness))
+        tube_diameter//(nozzle_diameter + 2*nozzle_wall_thickness))
     print("got " + str(num_nozzle_sectors) + " nozzle sectors")
 
     # TODO: clean this up
@@ -270,30 +271,14 @@ def build_disk_partition(segment_radius,
 
     segment_nozzle_area = 0
     # TODO: why are we ceil /2 here? this is marginally wrong but just in stdout
-    for _ in range(int(ceil(num_nozzle_sectors/2))):
-        # the angle to iterate by
+    # for _ in range(int(ceil(num_nozzle_sectors/2))):
+    for _ in range(int(num_nozzle_sectors)):
         # TODO: autorefactored function
         # TODO: segment_nozzle_area needs to be calculated for both symmetries
-
-        # top symmetry
-        print("generating top track symmetry...")
         disk_partition, _ = nozzle_track(
             nozzle_diameter, nozzle_wall_thickness, init_sector_radius,
             sweep, segment_nozzle_area, nozzle, disk_partition)
-
-        # bottom symmetry
-        print("generating bottom track symmetry...")
-        disk_partition, segment_nozzle_area = nozzle_track(
-            nozzle_diameter, nozzle_wall_thickness, final_sector_radius,
-            sweep, segment_nozzle_area, nozzle, disk_partition)
-
-        # TODO: fit is incorrect due to floor div?
-        #       use a symmetric iterator about the middle
-        # count from the start to halfway then iterate mirror twice about middle
-        # just iterate half doing each side symmetrically
         init_sector_radius = init_sector_radius + \
-            (nozzle_diameter + 2*nozzle_wall_thickness)
-        final_sector_radius = final_sector_radius + \
             (nozzle_diameter + 2*nozzle_wall_thickness)
 
     # TUBING CONNECTORS #
@@ -344,10 +329,6 @@ def build_disk_partition(segment_radius,
 
 
 def nozzle_track(nozzle_diameter, nozzle_wall_thickness, sector_radius, sweep, segment_nozzle_area, nozzle, disk_partition):
-    # TODO: consider angling the nozzles if needing more
-    #       initial entropy to chicken wire
-    #        (should be chaotic enough with just chicken wire)
-    # the angle to iterate by
     track_offset = degrees(
         asin((nozzle_diameter + 2*nozzle_wall_thickness)/sector_radius))
     print("iterating with angular offset " +
