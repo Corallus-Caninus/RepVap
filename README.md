@@ -36,6 +36,7 @@ Print with adaptive layering and a low layer height. Reduce the layer width slig
 nozzles should be touching the bed, this makes the pagoda cones a little difficult (adaptive layering helps) but yields better nozzles.
 
 # WATER BRACKET
+<img src="https://dsm01pap006files.storage.live.com/y4mlq-jnHfIUEWrzPb6QdId9p6hMM6Mm0V-oWxLXKHtLcYRm0s81wMXkvKFCPX-uLdV9PkVq6Pxry7pjo6MNKx4Yupwq9Mn0johj2W3Ytt-iPaYcomIvgZSJT8n_l0jlbXd9wTYz1eiQIAgczEE5nAPeacfkp0zxIZqcfpL5GBgbANMX4s3_3Em359LgwM7Dtzh?width=660&height=495&cropmode=none" width="660" height="495" />
 Print with the screw mounts touching the bed. Ensure good overlap with infill so the screw mounts dont seperate when threaded through.
 
 
