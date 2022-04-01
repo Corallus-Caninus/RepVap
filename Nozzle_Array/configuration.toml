@@ -4,26 +4,36 @@
 # NOTE: support gussets on white lid are 135mm
 # leaves outer area for support.
 
-# all entries are in millimeters.
+# all entries are in millimeters #
 # TODO: try smaller layer heights(currently 0.2). Effectively underextrudes for 
 #	better resolution in the case of small geometries
 #	test flow of sample for further analysis. need sufficient 
 #	pressure through array sequence since negating tube_wall_thickness
 
+#LID PARAMETERS#
 # initial_radius = 94
 initial_radius = 80
-#final_radius = 115 #was 135
+# final_radius = 115 #was 135
 final_radius = 135 #was 135
-nozzle_diameter = 1.5 #2 #0.8
-nozzle_wall_thickness = 1
-drop_down_depth = 1
 
+#NOZZLE PARAMETERS#
+# nozzle_diameter = 1.7 #2 #0.8
+nozzle_diameter = 1
+# nozzle_diameter = 0.5
+nozzle_wall_thickness = 1.25
+
+#LID INTERFACE PARAMETERS#
+drop_down_depth = 1
 max_segment_size = 150
+array_spacing = 5 #concentric distance between arrays
+
+#INTERCONNECT PARAMETERS#
 # PVC tube inteconnect diameter between nozzle arrays
 tube_diameter = 7.6 # was 8 was 7.8
 # thickness of the expanding cone to grip the tube
 pagoda_thickness = 1.2 # was 1.8
 
+#LID FASTENER PARAMETERS#
 #the distance the fastener will travel 
 #(thickness of the lid of the container)
 fastener_gap = 4
@@ -32,6 +42,5 @@ fastener_thickness = 4.7
 #the diameter of the cone that will snap in the hole
 fastener_diameter = 6.25
 
-# wall_thickness = 4.5
+#OBJECT PARAMETERS#
 wall_thickness = 4.5
-array_spacing = 5

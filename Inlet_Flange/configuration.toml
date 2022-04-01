@@ -14,22 +14,36 @@ container_height = 355.6
 #cone_slope = 45 #degrees
 
 # since we use 1" diameter drill bit this is the radius:
-radius = 12.66
+radius = 12.66 
+
+# the distance between the gaps for the bucket wall, set large for mechanical stability
+groove_spacing= 3#2.0
+
+# radius_loss = 2 # the spacing between the hole radius of the bucket and the outer flange radius. this is also used for grooves in the flange
 
 # the gap of the bucket wall (container thickness) can also be negative to set pressure on cone
 # actual measurment of lowes bucket: 2.5
-#fastner_gap = 1.75 #TODO: for some reason this is larger in the model. leaky
-fastner_gap = 0.1
+# fastner_gap = 1.75 #TODO: for some reason this is larger in the model?
+fastner_gap = 1.5 #TODO: for some reason this is larger in the model?
+# fastner_gap = 0.1
 
-tab_width = 12
-tab_length = 2.5
-tab_thickness = 1
+# tab_width = 12
+# tab_width = 4#8
+# tab_length = 1.25#2.5
+# tab_thickness = 0.5#1
+# # the amount the tabs will sink into the outer_flange from the inner_flange
+# # be careful that wall_thickness is large enough to support this value
+# tab_depth = 0.05
+# # tab_angle = 85    #degrees
 # tab_angle = 85    #degrees
-tab_angle = 85    #degrees
 # generally should be half tab_width
+# num_tabs = 15
 
-num_tabs = 15
 #NOTE: this is subtractive so high values will increase pressure loss by this amount.
 wall_thickness = 3.25
 
-flange_thickness = 7 #must be greater than wall thickness TODO: make this additive to wall thickness in scad
+# flange_thickness = 7 #must be greater than wall thickness TODO: make this additive to wall thickness in scad
+# flange_thickness = 6.5 #this value must be swept to create the perfect tension and not rip the bucket or create cavities that allow leakage
+#flange_thickness = 3
+# flange_thickness = 2
+flange_thickness = 1

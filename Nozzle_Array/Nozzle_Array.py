@@ -150,7 +150,7 @@ def bucket_emitter_array(
                       filename + ".stl " + filename + ".scad &")
 
         print("rendering.. " + str(index))
-        filename = "x" + str(num_segments - 1) + "_" + \
+        filename = "x" + str(num_segments) + "_" + \
             "_nozzle_arc"+str(index+1)
         scad_render_to_file(disk_partition, filename+".scad")
         os.system("openscad -o " +

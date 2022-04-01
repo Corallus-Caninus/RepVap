@@ -1,51 +1,28 @@
+from lib import render_object
 from solid import *
 from solid.utils import *
 import toml
 from math import *
 import os
+import subprocess
+# import render from lib in top level, we are in directory water_bracket render is in directory lib
+import sys
+sys.path.append('../lib')
 
-# TODO: retangle_prism_dimensions should be ListOfLists like screw_args for multi chip cooling
-#       (cpu-gpu combinations like laptops are the primary application but can be used on other PCBs)
-# for now may be able to union two water_mounts with identical screw_args, just need to
-# ensure can drive screws
 
-# NOTE: it is highly recommended to zip tie the nozzles to the Aluminum cooling plates
+# NOTE: it is highly recommended to zip tie the tubing to the Aluminum cooling plates
 
 # TODO: drop down feet that connect through to the cooling plate for aluminum foil conductors (vrms, vram, regulator etc.)
+# this is low priority can just add a bunch of water blocks if they really need cooling for now. Need to work out the
+# conductivity of the foil method
 
-# TODO: pagoda fasteners instead of screws for mobo chipsets (pass as an boolean param)
-
-
-# def mount_side_nozzles(**argv):
-# rectangle_prism_dimensions = "[71.4, 71.4, 0.75]"
-# # can be (1,0) (0,-1) etc. avoid diagonal: (-1, 1)
-# nozzle_direction =  "(-1,0)"
-# # ORIGINAL #
-# # wall_thickness = 2
-# wall_thickness = 4
-
-# #determines whether we will use through holes for screws or pagoda fasteners.
-# is_pagoda = "False"
-# #the radius of the pagoda cone that will snap through the hole mounts.
-# pagdoda_thickness = 0
+# TODO: pagoda fasteners instead of screws for mobo chipsets and other through hole mounts (gpus) (pass as an boolean param)
+# TODO: manifold of coolers (multiple aluminum blocks integrated into one water_bracket)
+#       retangle_prism_dimensions should be ListOfLists like screw_args for multi chip cooling
 
 # # SCREW MOBO MEASUREMENTS #
-# # TODO: create the AM4 motherboard screws
-# # ORIGINAL #
-# # screw_args = '''
-# # [
-# # {"x": 84, "y": -33, "z": 0, "screw_head_diameter": 4.45, "screw_bolt_diameter": 2,"screw_bolt_depth":  2.4},
-# # {"x": -29.5, "y": 16.28, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7},
-# # {"x": -29.5, "y": -16.28, "z": 0, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7},
-# # ]'''
-# screw_args = '''
-# [
-# {"x": 71.88, "y": -41.5, "z": 41, "screw_head_diameter": 4.45, "screw_bolt_diameter": 2,"screw_bolt_depth":  2.4},
-# {"x": -37.891, "y": 14.3, "z": 41, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7},
-# {"x": -37.891, "y": -14.3, "z": 41, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  1.7},
-# {"x": 37.891, "y": -14.3, "z": 41, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  2},
-# {"x": 37.891, "y": 14.3, "z": 41, "screw_head_diameter": 4, "screw_bolt_diameter": 2,"screw_bolt_depth":  2},
-# ]'''
+
+
 def mount_side_nozzles(rectangle_prism_dimensions, nozzle_direction, wall_thickness, screw_args, is_pagoda, pagdoda_thickness):
     # rectangle_prism_dimensions, nozzle_direction, wall_thickness,
     #                      screw_args):
@@ -64,9 +41,9 @@ def mount_side_nozzles(rectangle_prism_dimensions, nozzle_direction, wall_thickn
     5. print and fasten your cooling block!
 
     PARAMETERS:
-        rectangle_prism_dimensions: [x,y,z] of sides defining the rect prism.
+        rectangle_prism_dimensions: [[x,y,z],...] of sides defining each rect prism.
             This should be the dimensions of the water cooling block since walls
-            are additive here
+            are additive here.
         nozzle_direction: (1,-1) whether the nozzle is facing out on the
             right/left and front/back of the mount. 1s and -1s only.
         wall_thickness: a constant value for wall thickness
@@ -98,14 +75,26 @@ def mount_side_nozzles(rectangle_prism_dimensions, nozzle_direction, wall_thickn
     nozzle_direction = eval(nozzle_direction)
     screw_args = eval(screw_args)
 
+    # TODO: multiple mounts with the same central point. create risers to each mount and center the risers to the actual center.
+    # calculate the center of the rectangle prisms
+    center = [0, 0, 0]
+    for i in range(len(rectangle_prism_dimensions)):
+        center[0] += rectangle_prism_dimensions[i][0]/2
+        center[1] += rectangle_prism_dimensions[i][1]/2
+        center[2] += rectangle_prism_dimensions[i][2]/2
+
+    # iterate over rectangle_prism_dimensions for each prism creating the individual prisms
+
+    # connect each prism to each other with risers (these can intersect with screw risers)
+
     # build the initial mount
-    # TODO: TEST
     mount_height = rectangle_prism_dimensions[2] + 2*wall_thickness
 
     # erase an opening face for the nozzles by scrubing over a translation
     opening = translate([nozzle_direction[0]*wall_thickness,
                          nozzle_direction[1]*wall_thickness, 0])(cube(rectangle_prism_dimensions, center=True))
     # inner = cube(rectangle_prism_dimensions, center=True)
+
     # same as above but also subtract if z is negative as done here:
     # also move up by the screw_arg z values if its negative
     if min([screw_arg["z"] for screw_arg in screw_args]) < 0:
@@ -211,7 +200,7 @@ def mount_side_nozzles(rectangle_prism_dimensions, nozzle_direction, wall_thickn
                                   h=screw['screw_bolt_depth']/2, center=True, segments=200)
             footer = footer - screw_hole
         else:
-            # TODO: check if pagodas stack and make the parameters robust to sweeping
+            # TODO: stack pagodas
             # build the pagoda fastener
             pagoda = cylinder(r=screw['screw_bolt_diameter']/2,
                               h=screw['screw_bolt_depth'], center=True, segments=200)
@@ -287,25 +276,10 @@ def orient_terminal(screw, toScrew):
     return screw_translate_distance, degrees(angle)
 
 
-def render_object(render_object, filename):
-    '''
-    creates a .stl and .scad solution for the given solidpython OpenSCAD object
-    PARAMETERS:
-        render_object: the OpenSCAD object
-        filename: a string for the file to be saved
-    '''
-    scad_render_to_file(render_object, filename +
-                        ".scad", file_header='$fn=200;')
-    # render with OpenSCAD
-    print("Openscad is now rendering the solution..")
-    # os.system("/home/bada/Desktop/code/openscad/openscad -o " +
-    os.system("openscad -o " +
-              filename + ".stl " + filename + ".scad")
-
-
 if __name__ == '__main__':
     config = toml.load("configuration.toml")
     print("raw config: "+str(config))
     mount = mount_side_nozzles(**config)
     # TODO: render this with the exec function that should be refactored into library
-    render_object(mount, "mount")
+    # also pass the path
+    render_object(mount, "mount", os.getcwd())

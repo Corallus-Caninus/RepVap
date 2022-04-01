@@ -35,6 +35,7 @@ is_pagoda = "False"
 pagdoda_thickness = 1
 
 # SCREW MOBO MEASUREMENTS #
+# TODO: currently these can only have negative or zero z values
 # AM4 MEASUREMENTS:
 screw_args = '''
 [
