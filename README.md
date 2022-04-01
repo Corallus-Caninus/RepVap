@@ -1,8 +1,10 @@
 # RepVap
 A *majority* 3D printed evaporative cooler.
 
-This project is currently under active development. I have a working RepVap but you may need assistance.
-Email me at ward.joshua92@yahoo.com.
+![alt text](https://dsm01pap006files.storage.live.com/y4mNqyVxHRCuLsbiG1snyHo6H32Yvp5lyeKOjdw8UTLaagMpep6PgvXyYDyVAsrQCaJMA1IWQW5bd5kfneQCrvnepA0ccWRS8XPv6znJRpFzMxWQkzo6voC1-LIzgdc1ezgkpW2hetO1HngxRHAqVOZKXqjaKllZkwiy8OCucqbqAo6xq_7sJmrXo9qRAKZSoqp?width=4160&height=3120&cropmode=none)
+A RepVap made with a 5 Gallon bucket cooling a B550M plus motherboard chipset and ryzen 3600 clocked at 4650MHz all cores as a daily workstation.
+
+This project is currently under active development. If you need assistance or would like to purchase a kit with all the parts included (assembly required) email me at ward.joshua92@yahoo.com.
 
 requires OpenSCAD and python3 as well as solidpython.
 essentially on ubuntu:
@@ -33,6 +35,7 @@ Print with adaptive layering and a low layer height. Reduce the layer width slig
 nozzles should be touching the bed, this makes the pagoda cones a little difficult (adaptive layering helps) but yields better nozzles.
 
 # WATER BRACKET
+<img src="https://dsm01pap006files.storage.live.com/y4mlq-jnHfIUEWrzPb6QdId9p6hMM6Mm0V-oWxLXKHtLcYRm0s81wMXkvKFCPX-uLdV9PkVq6Pxry7pjo6MNKx4Yupwq9Mn0johj2W3Ytt-iPaYcomIvgZSJT8n_l0jlbXd9wTYz1eiQIAgczEE5nAPeacfkp0zxIZqcfpL5GBgbANMX4s3_3Em359LgwM7Dtzh?width=660&height=495&cropmode=none" width="660" height="495" />
 Print with the screw mounts touching the bed. Ensure good overlap with infill so the screw mounts dont seperate when threaded through.
 
 
