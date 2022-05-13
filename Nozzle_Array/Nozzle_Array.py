@@ -6,6 +6,8 @@
 # NOTE: consider 2d projections for printing a cut stencil guide
 #       https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/3D_to_2D_Projection
 
+# TODO: option for tkinter turtle graphics.
+
 # TODO: set geometry segments in header of render file instead of in geometry for production
 
 # TODO: consider a snap hinge that pokes through inlet and outlet to hang from
@@ -257,7 +259,7 @@ def build_disk_partition(segment_radius,
     # 1-dimension cross-section analysis of how many nozzle sectors will fill the disk_segment
 
     num_nozzle_sectors = int(
-        tube_diameter//(nozzle_diameter + 2*nozzle_wall_thickness))
+        tube_diameter//(nozzle_diameter + nozzle_wall_thickness))
     print("got " + str(num_nozzle_sectors) + " nozzle sectors")
 
     # TODO: clean this up
@@ -278,8 +280,9 @@ def build_disk_partition(segment_radius,
         disk_partition, _ = nozzle_track(
             nozzle_diameter, nozzle_wall_thickness, init_sector_radius,
             sweep, segment_nozzle_area, nozzle, disk_partition)
+
         init_sector_radius = init_sector_radius + \
-            (nozzle_diameter + 2*nozzle_wall_thickness)
+            nozzle_wall_thickness + nozzle_diameter
 
     # TUBING CONNECTORS #
     flange = cube(1, center=True)
