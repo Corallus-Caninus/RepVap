@@ -247,9 +247,10 @@ def build_disk_partition(segment_radius,
     #       place each nozzle seperated by nozzle_radius + nozzle_wall_thickness
     #       then linefeed and resweep at radius + nozzle_radius + nozzle_wall_thickness
 
-    nozzle = cylinder(r=nozzle_diameter/2 + nozzle_wall_thickness, h=drop_down_depth, center=True, segments=11) - \
-        hole()(cylinder(r=nozzle_diameter/2, h=drop_down_depth +
-                        wall_thickness, center=True, segments=11))
+    # Epsilon shell here:
+    nozzle = hole()(cylinder(r=nozzle_diameter/2, h=drop_down_depth +
+                             wall_thickness, center=True, segments=11))
+
     # have to shift up by half height since centered
     nozzle = up((drop_down_depth+wall_thickness)/2)(nozzle)
     # tap through to the main hull
@@ -264,7 +265,8 @@ def build_disk_partition(segment_radius,
 
     # TODO: clean this up
     init_sector_radius = segment_radius + wall_thickness/2 + \
-        nozzle_wall_thickness + nozzle_diameter/2
+        nozzle_diameter + nozzle_wall_thickness/2
+
     final_sector_radius = wall_thickness/2 + (ceil(num_nozzle_sectors/2))*(
         nozzle_wall_thickness + nozzle_diameter/2) + init_sector_radius
     print('init sector radius: {} final sector radius: {}'.format(
@@ -333,7 +335,7 @@ def build_disk_partition(segment_radius,
 
 def nozzle_track(nozzle_diameter, nozzle_wall_thickness, sector_radius, sweep, segment_nozzle_area, nozzle, disk_partition):
     track_offset = degrees(
-        asin((nozzle_diameter + 2*nozzle_wall_thickness)/sector_radius))
+        asin((nozzle_diameter + nozzle_wall_thickness)/sector_radius))
     print("iterating with angular offset " +
           str(track_offset) + " degrees")
     num_nozzles = int(sweep/track_offset)
