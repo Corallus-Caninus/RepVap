@@ -1,37 +1,30 @@
-#76.2 initial_radius
-#114.3 final_radius
-#was 152.4
-# NOTE: support gussets on white lid are 135mm
-# leaves outer area for support.
-
 # all entries are in millimeters #
-# TODO: try smaller layer heights(currently 0.2). Effectively underextrudes for 
-#	better resolution in the case of small geometries
-#	test flow of sample for further analysis. need sufficient 
-#	pressure through array sequence since negating tube_wall_thickness
+# These configuration values are set for a 5 gallon bucket RepVap #
+# it is recommended to reinforce the fastener cones and inlets with 
+# super glue to ensure they dont break due to layer adhesion tolerances.
 
 #LID PARAMETERS#
 # initial_radius = 94
 initial_radius = 80
-# final_radius = 115 #was 135
-final_radius = 135 #was 135
+final_radius = 135
 
 #NOZZLE PARAMETERS#
-# nozzle_diameter = 1.7 #2 #0.8
-nozzle_diameter = 1
-# nozzle_diameter = 0.5
-nozzle_wall_thickness = 1.25
+nozzle_diameter = 1.25
+nozzle_wall_thickness = 2
+nozzle_track_spacing = 7
 
 #LID INTERFACE PARAMETERS#
-drop_down_depth = 1
+# drop down depth helps decrease the pressure at each nozzle and can help 
+# ensure the entire array is filled with water for a given pump.
+drop_down_depth = 5
 max_segment_size = 150
 array_spacing = 5 #concentric distance between arrays
 
 #INTERCONNECT PARAMETERS#
-# PVC tube inteconnect diameter between nozzle arrays
-tube_diameter = 7.6 # was 8 was 7.8
+# flexible tube inteconnect diameter between nozzle arrays
+tube_diameter = 7.6
 # thickness of the expanding cone to grip the tube
-pagoda_thickness = 1.2 # was 1.8
+inlet_thickness = 1.3 # was 1.8
 
 #LID FASTENER PARAMETERS#
 #the distance the fastener will travel 
