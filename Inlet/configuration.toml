@@ -1,0 +1,21 @@
+# all measurements are in millimeters
+
+# these configuration values are for a 5 gallon RepVap #
+# it is recommended to put some flex seal on the inside after affixing to the container. 
+# The snap fit can be configure to be tight but waterproofing also depends on the 
+# precision of the drill cut as a perfect circle.
+
+# since we use 1" diameter drill bit this is the radius:
+radius = 12.66 
+
+# the distance between the gaps for the bucket wall, set large for mechanical stability
+groove_spacing= 3#2.0
+
+# the gap of the bucket wall (container thickness) can also be negative to set pressure on cone
+# actual measurment of lowes bucket: 2.5 (approx given curvature)
+fastner_gap = 1.5 
+
+#NOTE: this is subtractive so high values will increase pressure loss by this amount.
+wall_thickness = 3.25
+
+thickness = 1
