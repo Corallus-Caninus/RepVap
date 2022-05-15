@@ -1,6 +1,6 @@
 #RENDER:
-cd Inlet_Flange 
-powershell -command "& python3 Inlet_Flange.py"
+cd Inlet
+powershell -command "& python3 Inlets.py"
 cd .. 
 cd Nozzle_Array
 powershell -command "& python3 Nozzle_Array.py"

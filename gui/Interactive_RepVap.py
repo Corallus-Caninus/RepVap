@@ -2,22 +2,35 @@ import tkinter as tk
 import tkinter.filedialog
 from tkinter import ttk
 import os
-import ffmpeg
+# import ffmpeg
 from PIL import *
 from time import time
 import subprocess
 import toml
 
 # local imports
-from parser import parse
+# from parser import parse
 from draw_lid import draw_lid
-from draw_water_bracket import draw_water_bracket
+# from draw_water_bracket import draw_water_bracket
 import sys
 sys.path.append('../')
 
 # create a gui that can load in and edit all files in RepVap
 
 
+'''parse the given toml file string and return a dictionary'''
+
+
+def parse(toml_string):
+    # toml_dict = toml.loads(toml_string)
+    # open the toml file and read it as a string
+    with open(toml_string, 'r') as toml_file:
+        toml_string = toml_file.read()
+
+    return toml_string
+
+
+# TODO: rework this for windows. Re evaluate strategy for visualizing and iterating parameters.
 class Interactive_RepVap(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
@@ -80,8 +93,8 @@ class Interactive_RepVap(tk.Tk):
         # to select and close one at a time
         draw_lid()
         print("finished drawing lid")
-        print("drawing the water_bracket")
-        draw_water_bracket()
+        # print("drawing the water_bracket")
+        # draw_water_bracket()
 
         # set the text box to be the size of the window
         self.txt.config(width=self.winfo_width(), height=self.winfo_height())

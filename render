@@ -3,7 +3,7 @@
 
 # we will render the following:
 # Carbon_Filter # DO NOT RENDER NOT COMPLETE
-# Inlet_Flange
+# Inlet
 # Nozzle_Array
 # Refracting_Nozzle_Junctions #DO NOT RENDER NOT PART OF CURRENT TEST DESIGN
 # Reservoir
@@ -12,7 +12,7 @@
 # Water_Bracket
 
 #RENDER:
-cd Inlet_Flange && python3 Inlet_Flange.py && cd .. &
+cd Inlet && python3 Inlet.py && cd .. &
 cd Nozzle_Array && python3 Nozzle_Array.py && cd .. &
 cd Reservoir && python3 Bottle_Stand.py && cd .. &
 cd Spill_Guard && python3 Spill_Guard.py && cd .. &
