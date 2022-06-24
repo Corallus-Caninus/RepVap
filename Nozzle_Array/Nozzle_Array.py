@@ -35,6 +35,7 @@ def bucket_emitter_array(
     fastener_diameter,
     wall_thickness,
     array_spacing,
+    epsilon,
 ):
     """
     PARAMETERS:
@@ -136,6 +137,7 @@ def bucket_emitter_array(
             fastener_thickness,
             fastener_diameter,
             wall_thickness,
+            epsilon,
         )
         total_nozzle_area = total_nozzle_area + cur_nozzle_area * num_segments
 
@@ -174,6 +176,7 @@ def bucket_emitter_array(
                 fastener_thickness,
                 fastener_diameter,
                 wall_thickness,
+                epsilon,
                 True,
             )
             filename = "ENDCAP_x1" + "_nozzle_arc" + str(index + 1)
@@ -219,6 +222,7 @@ def build_disk_partition(
     fastener_thickness,
     fastener_diameter,
     wall_thickness,
+    epsilon,
     final=False,
 ):
     """
@@ -256,7 +260,7 @@ def build_disk_partition(
 
     # now we place the snap ons atop the disk_partition
     inlet_fastener = right(
-        segment_radius + fastener_thickness / 4 + tube_diameter / 2 + wall_thickness / 2
+        segment_radius +  tube_diameter / 2 + wall_thickness / 2
     )(inlet_fastener)
     inlet_fastener = translate([0, 0, -fastener_gap / 2])(inlet_fastener)
     # here we will rotate not extrude to either end of the disk_partition
@@ -382,7 +386,7 @@ def build_disk_partition(
     )
     # now tap a hole through the center
     tube_nozzle = tube_nozzle_solid - hole()(
-        cylinder(tube_diameter / 2, 2 * tube_diameter, segments=200)
+        cylinder(tube_diameter / 2 - epsilon, 2 * tube_diameter, segments=200)
     )
 
     tube_nozzle = tube_nozzle + flange
