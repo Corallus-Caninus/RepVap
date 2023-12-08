@@ -1,1 +1,1 @@
-This is @DEPRECATED in favour of Inlets
+This is @DEPRECATED in favour of Inlets but they look cool and lose less pressure. can be flex sealed to work.

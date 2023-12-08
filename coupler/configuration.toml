@@ -1,0 +1,25 @@
+# all measurements are in millimeters
+# 12.8
+# 8.3
+
+#INTERCONNECT PARAMETERS#
+# in_tube_diameter is the diameter of the smaller tube
+in_tube_diameter = 8.3
+# in_tube_cone_diameter is the diameter of the cone that the larger tube fits over
+in_tube_cone_diameter = 9.5 
+# in_tube_cone_height is the height of the cone that the larger tube fits over
+in_tube_cone_height = 18
+
+# out_tube_diameter is the diameter of the larger tube
+out_tube_diameter = 12.8
+# out_tube_cone_diameter is the diameter of the cone that the smaller tube fits over
+out_tube_cone_diameter = 14
+# out_tube_cone_height is the height of the cone that the smaller tube fits over
+out_tube_cone_height = 11
+
+# coupler_length is the length of the coupler connecting the cones of differing size
+coupler_length = 30
+
+#OBJECT PARAMETERS#
+# wall_thickness = 3.25
+wall_thickness = 2

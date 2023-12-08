@@ -1,4 +1,3 @@
-from lib import render_object
 from solid import *
 from solid.utils import *
 import toml
@@ -8,6 +7,7 @@ import subprocess
 # import render from lib in top level, we are in directory water_bracket render is in directory lib
 import sys
 sys.path.append('../lib')
+from lib import render_object
 
 
 # NOTE: it is highly recommended to zip tie the tubing to the Aluminum cooling plates
@@ -79,9 +79,12 @@ def mount_side_nozzles(rectangle_prism_dimensions, nozzle_direction, wall_thickn
     # calculate the center of the rectangle prisms
     center = [0, 0, 0]
     for i in range(len(rectangle_prism_dimensions)):
-        center[0] += rectangle_prism_dimensions[i][0]/2
-        center[1] += rectangle_prism_dimensions[i][1]/2
-        center[2] += rectangle_prism_dimensions[i][2]/2
+        center[0] += rectangle_prism_dimensions[i]/2
+        center[1] += rectangle_prism_dimensions[i]/2
+        center[2] += rectangle_prism_dimensions[i]/2
+        #center[0] += rectangle_prism_dimensions[i][0]/2
+        #center[1] += rectangle_prism_dimensions[i][1]/2
+        #center[2] += rectangle_prism_dimensions[i][2]/2
 
     # iterate over rectangle_prism_dimensions for each prism creating the individual prisms
 
@@ -91,8 +94,13 @@ def mount_side_nozzles(rectangle_prism_dimensions, nozzle_direction, wall_thickn
     mount_height = rectangle_prism_dimensions[2] + 2*wall_thickness
 
     # erase an opening face for the nozzles by scrubing over a translation
-    opening = translate([nozzle_direction[0]*wall_thickness,
-                         nozzle_direction[1]*wall_thickness, 0])(cube(rectangle_prism_dimensions, center=True))
+   # opening = translate([nozzle_direction[0]*wall_thickness,
+   #                      nozzle_direction[1]*wall_thickness, 0])(cube(rectangle_prism_dimensions, center=True))
+   #same as above but add wall_thickness to rectangle_prism_dimensions[1] and [0] 
+   #opening = translate([nozzle_direction[0]*wall_thickness, nozzle_direction[1]*wall_thickness, 0])(cube([rectangle_prism_dimensions[0] + wall_thickness, rectangle_prism_dimensions[1] + wall_thickness, rectangle_prism_dimensions[2]], center=True))
+   #the above is correct but fix the indentation error
+    opening = translate([nozzle_direction[0]*wall_thickness, nozzle_direction[1]*wall_thickness, 0])(cube([rectangle_prism_dimensions[0] + 2*wall_thickness, rectangle_prism_dimensions[1], rectangle_prism_dimensions[2]+wall_thickness], center=True))
+
     # inner = cube(rectangle_prism_dimensions, center=True)
 
     # same as above but also subtract if z is negative as done here:
@@ -117,7 +125,7 @@ def mount_side_nozzles(rectangle_prism_dimensions, nozzle_direction, wall_thickn
 
     mount_hull = outer - hole()(inner)
     # open up the nozzle face
-    mount = mount_hull - hole()(opening)
+    mount = mount_hull - opening
     # drop the bottom out
     mount = up(mount_height/2)(mount)
 
