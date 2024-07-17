@@ -158,7 +158,7 @@ def mount_side_nozzles(rectangle_prism_dimensions, nozzle_direction, wall_thickn
             # screw['screw_head_diameter'],
             4*wall_thickness,
             screw_translate_distance,
-            4 * wall_thickness], center=True)
+            2 * wall_thickness], center=True)
 
         # raise to xy plane
         overpass = up(wall_thickness)(overpass)

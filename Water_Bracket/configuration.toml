@@ -17,7 +17,9 @@
 # ALUMINUM WATER BLOCK MEASUREMENTS #
 # ORIGINAL #
 # AM4 MEASUREMENTS:
-rectangle_prism_dimensions = "[43, 43, 10]" #for non cube standard 40mm water block
+# rectangle_prism_dimensions = "[43, 43, 10]" #for non cube standard 40mm water block
+# NOTE: was 43,43,10 dec 20 2023
+rectangle_prism_dimensions = "[43, 43, 5]" #for non cube standard 40mm water block
 # PROJECT AL MEASUREMENTS:
 # rectangle_prism_dimensions = "[71.4, 71.4, 0.75]"
 # can be (1,0) (0,-1) etc. avoid diagonal: (-1, 1)
@@ -39,12 +41,13 @@ pagdoda_thickness = 1
 # MI25 with 40mm water block
 #TODO: MI25 also needs screws set to m4 kit purchased (dont use a washer.. just set here)
 #NOTE: was z=0 moved lower due to thread count not being high enough
+# NOTE: z was -2 dec 20 2023
 screw_args = '''
 [
-{"x": -32.1840, "y": 32.1840, "z": -2, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8}, 
-{"x": -32.1840, "y": -32.1840, "z": -2, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8}, 
-{"x": 32.1840, "y": -32.1840, "z": -2, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8}, 
-{"x": 32.1840, "y": 32.1840, "z": -2, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8},
+{"x": -28.609, "y": 28.609, "z": 0, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8}, 
+{"x": -28.609, "y": -28.609, "z": 0, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8}, 
+{"x": 28.609, "y": -28.609, "z": 0, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8}, 
+{"x": 28.609, "y": 28.609, "z": 0, "screw_head_diameter": 7.15, "screw_bolt_diameter": 3.42,"screw_bolt_depth":  11.8},
 ]'''
 
 # PROJECT AL MEASUREMENTS:
