@@ -582,53 +582,53 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         #                    h=self.height+self.wall_thickness,\
         #                    _fn=500, center=True)
         #TODO: ensure nozzles dont hole this and there arent leaks
-        endcap = cylinder(d=self.tube_diameter,\
-                          h=self.height+self.wall_thickness+self.tube_diameter,\
-                          _fn=500, center=True)
-        #TODO: subtract after adding nozzles
-        endcap_neg = cylinder(r=self.tube_diameter/2 - self.inlet_thickness, \
-                            h=self.height+self.wall_thickness+self.tube_diameter,\
-                            _fn=500, center=True)
-        endcap -= endcap_neg
-
-        #add the pagoda fasteners
-        #TODO: ensure inlet_thickness is sufficient, if this leaks alot of 
-        #      pressure will be lost and wont be detected by the user.
-        pagoda_nozzle = cylinder(d1=self.tube_diameter+self.inlet_thickness, \
-                                    d2=self.tube_diameter, \
-                                    h=self.tube_diameter, _fn=500, center=True)
-        pagoda_nozzle_neg = cylinder(r=self.tube_diameter/2-self.inlet_thickness, \
-                                    h=self.tube_diameter, _fn=500, center=True)
-        #pagoda_nozzle_neg = cylinder(d1=self.tube_diameter, \
-        #                            d2=self.tube_diameter, \
-        #                            h=self.tube_diameter, _fn=500, center=True)
-        pagoda_nozzle -= pagoda_nozzle_neg
-
-        pagoda_nozzle = pagoda_nozzle\
-                                .up(self.wall_thickness + self.height/2 + self.tube_diameter/2)
-        endcap += pagoda_nozzle
-
-        #now create another pagoda nozzle for the bottom
-        pagoda_nozzle = pagoda_nozzle\
-                                .rotate([180,0,0])
-        endcap += pagoda_nozzle
-
-        #NOTE: 2*wall_thickness may be incorrect but passes my tests, 
-        #      look here for render errors on inlet
-        arc_angle = sin((self.tube_diameter+self.inlet_thickness+2*self.wall_thickness)/(2*mean))*180/pi
-        #move into position on self.object
-        #NOTE: up by 1.5*wall_thickness doesnt make sense to me but passes test, 
-        #      look here for endcap related errors
-        endcap = endcap\
-                    .forward(mean)\
-                    .rotate(self.angle/2-90)\
-                    .up(self.height)
-        endcap_neg = endcap_neg\
-                    .forward(mean)\
-                    .rotate(self.angle/2-90)\
-                    .up(self.height)
-        self.object += endcap
-        self.object -= endcap_neg
+#        endcap = cylinder(d=self.tube_diameter,\
+#                          h=self.height+self.wall_thickness+self.tube_diameter,\
+#                          _fn=500, center=True)
+#        #TODO: subtract after adding nozzles
+#        endcap_neg = cylinder(r=self.tube_diameter/2 - self.inlet_thickness, \
+#                            h=self.height+self.wall_thickness+self.tube_diameter,\
+#                            _fn=500, center=True)
+#        endcap -= endcap_neg
+#
+#        #add the pagoda fasteners
+#        #TODO: ensure inlet_thickness is sufficient, if this leaks alot of 
+#        #      pressure will be lost and wont be detected by the user.
+#        pagoda_nozzle = cylinder(d1=self.tube_diameter+self.inlet_thickness, \
+#                                    d2=self.tube_diameter, \
+#                                    h=self.tube_diameter, _fn=500, center=True)
+#        pagoda_nozzle_neg = cylinder(r=self.tube_diameter/2-self.inlet_thickness, \
+#                                    h=self.tube_diameter, _fn=500, center=True)
+#        #pagoda_nozzle_neg = cylinder(d1=self.tube_diameter, \
+#        #                            d2=self.tube_diameter, \
+#        #                            h=self.tube_diameter, _fn=500, center=True)
+#        pagoda_nozzle -= pagoda_nozzle_neg
+#
+#        pagoda_nozzle = pagoda_nozzle\
+#                                .up(self.wall_thickness + self.height/2 + self.tube_diameter/2)
+#        endcap += pagoda_nozzle
+#
+#        #now create another pagoda nozzle for the bottom
+#        pagoda_nozzle = pagoda_nozzle\
+#                                .rotate([180,0,0])
+#        endcap += pagoda_nozzle
+#
+#        #NOTE: 2*wall_thickness may be incorrect but passes my tests, 
+#        #      look here for render errors on inlet
+#        arc_angle = sin((self.tube_diameter+self.inlet_thickness+2*self.wall_thickness)/(2*mean))*180/pi
+#        #move into position on self.object
+#        #NOTE: up by 1.5*wall_thickness doesnt make sense to me but passes test, 
+#        #      look here for endcap related errors
+#        endcap = endcap\
+#                    .forward(mean)\
+#                    .rotate(self.angle/2-90)\
+#                    .up(self.height)
+#        endcap_neg = endcap_neg\
+#                    .forward(mean)\
+#                    .rotate(self.angle/2-90)\
+#                    .up(self.height)
+#        self.object += endcap
+#        self.object -= endcap_neg
 
         #add the female only interconnect
         self.is_endcap = True
