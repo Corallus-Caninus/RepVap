@@ -14,7 +14,7 @@
 from math import *
 import os
 from solid import *
-from solid.utils import *
+from solid.utils import up, down, right
 import toml
 import turtle
 
