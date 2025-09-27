@@ -6,6 +6,7 @@ pkgs.mkShell {
   buildInputs = [
     pkgs.python39
     pkgs.pkg-config
+    pkgs.python39Packages.tkinter
     pkgs.cudaPackages_11.cudatoolkit
     pkgs.linuxPackages.nvidia_x11_legacy470
 #    pkgs.glibc
