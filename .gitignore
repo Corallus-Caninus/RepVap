@@ -3,3 +3,4 @@
 *.stl
 .aider*
 *.ps1*
+venv
