@@ -163,6 +163,58 @@ class CirclePartitions(BuildCirclePartitions):
         self.object = circle_arc_shell
         return self
 
+    '''
+    Adds male (tongue) and female (groove) slot connections to the radial faces
+    of the segment, allowing multiple segments to interlock.
+    '''
+    def add_slot_connections(self):
+        # Dimensions for the slot feature
+        slot_thickness = self.wall_thickness / 2 # Thickness of the tongue/groove along the arc
+        slot_depth = self.wall_thickness # How far it extends radially into/out of the segment
+        single_slot_height = self.height / 4 # Height of a single slot
+        slot_vertical_spacing = self.height / 4 # Space between slots and from top/bottom
+
+        # Tolerance for the female part to ensure a snug fit
+        tolerance = epsilon * 2
+
+        # Calculate the radial position for the slot (mid-point of the segment's radial extent)
+        mid_radial_pos = (self.radius_major + self.radius_minor) / 2
+
+        # --- Create the male (tongue) features ---
+        # Base cube for the tongue: [radial_extent, circumferential_thickness, height]
+        tongue_base = cube([slot_depth, slot_thickness, single_slot_height], center=True)
+
+        # Top tongue
+        tongue_male_top = tongue_base.translate([mid_radial_pos, -slot_thickness/2, 0])
+        tongue_male_top = tongue_male_top.up(self.height - slot_vertical_spacing - single_slot_height/2) # Position near top
+
+        # Bottom tongue
+        tongue_male_bottom = tongue_base.translate([mid_radial_pos, -slot_thickness/2, 0])
+        tongue_male_bottom = tongue_male_bottom.up(slot_vertical_spacing + single_slot_height/2) # Position near bottom
+
+        # --- Create the female (groove) features (negative space) ---
+        # Base cube for the groove: slightly larger than tongue for tolerance
+        groove_base = cube([slot_depth + tolerance, slot_thickness + tolerance, single_slot_height + tolerance], center=True)
+
+        # Top groove
+        groove_female_top = groove_base.translate([mid_radial_pos, (slot_thickness + tolerance)/2, 0])
+        groove_female_top = groove_female_top.up(self.height - slot_vertical_spacing - (single_slot_height + tolerance)/2)
+
+        # Bottom groove
+        groove_female_bottom = groove_base.translate([mid_radial_pos, (slot_thickness + tolerance)/2, 0])
+        groove_female_bottom = groove_female_bottom.up(slot_vertical_spacing + (single_slot_height + tolerance)/2)
+
+        # Add male features to the segment at angle=0 (along X-axis)
+        self.object += tongue_male_top
+        self.object += tongue_male_bottom
+
+        # Subtract female features from the segment at angle=self.angle
+        # Rotate the negative groove to the other side of the segment
+        self.object -= groove_female_top.rotate([0, 0, self.angle])
+        self.object -= groove_female_bottom.rotate([0, 0, self.angle])
+
+        return self
+
 
 '''
 builds a SprayRig by sequentially transforming a CirclePartition object via methods.
@@ -494,6 +546,58 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         self.__add_interconnect()
         return self
 
+    '''
+    Adds male (tongue) and female (groove) slot connections to the radial faces
+    of the segment, allowing multiple segments to interlock.
+    '''
+    def add_slot_connections(self):
+        # Dimensions for the slot feature
+        slot_thickness = self.wall_thickness / 2 # Thickness of the tongue/groove along the arc
+        slot_depth = self.wall_thickness # How far it extends radially into/out of the segment
+        single_slot_height = self.height / 4 # Height of a single slot
+        slot_vertical_spacing = self.height / 4 # Space between slots and from top/bottom
+
+        # Tolerance for the female part to ensure a snug fit
+        tolerance = epsilon * 2
+
+        # Calculate the radial position for the slot (mid-point of the segment's radial extent)
+        mid_radial_pos = (self.radius_major + self.radius_minor) / 2
+
+        # --- Create the male (tongue) features ---
+        # Base cube for the tongue: [radial_extent, circumferential_thickness, height]
+        tongue_base = cube([slot_depth, slot_thickness, single_slot_height], center=True)
+
+        # Top tongue
+        tongue_male_top = tongue_base.translate([mid_radial_pos, -slot_thickness/2, 0])
+        tongue_male_top = tongue_male_top.up(self.height - slot_vertical_spacing - single_slot_height/2) # Position near top
+
+        # Bottom tongue
+        tongue_male_bottom = tongue_base.translate([mid_radial_pos, -slot_thickness/2, 0])
+        tongue_male_bottom = tongue_male_bottom.up(slot_vertical_spacing + single_slot_height/2) # Position near bottom
+
+        # --- Create the female (groove) features (negative space) ---
+        # Base cube for the groove: slightly larger than tongue for tolerance
+        groove_base = cube([slot_depth + tolerance, slot_thickness + tolerance, single_slot_height + tolerance], center=True)
+
+        # Top groove
+        groove_female_top = groove_base.translate([mid_radial_pos, (slot_thickness + tolerance)/2, 0])
+        groove_female_top = groove_female_top.up(self.height - slot_vertical_spacing - (single_slot_height + tolerance)/2)
+
+        # Bottom groove
+        groove_female_bottom = groove_base.translate([mid_radial_pos, (slot_thickness + tolerance)/2, 0])
+        groove_female_bottom = groove_female_bottom.up(slot_vertical_spacing + (single_slot_height + tolerance)/2)
+
+        # Add male features to the segment at angle=0 (along X-axis)
+        self.object += tongue_male_top
+        self.object += tongue_male_bottom
+
+        # Subtract female features from the segment at angle=self.angle
+        # Rotate the negative groove to the other side of the segment
+        self.object -= groove_female_top.rotate([0, 0, self.angle])
+        self.object -= groove_female_bottom.rotate([0, 0, self.angle])
+
+        return self
+
     #NOTE: can always pass tubing through an inlet if we want to rush test SprayRig 
     #TODO: @DEPRECATED
     '''
@@ -515,6 +619,58 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         self.is_endcap = True
         #TODO: interconnect is subtracting the endcap
         self.__add_interconnect()
+
+        return self
+
+    '''
+    Adds male (tongue) and female (groove) slot connections to the radial faces
+    of the segment, allowing multiple segments to interlock.
+    '''
+    def add_slot_connections(self):
+        # Dimensions for the slot feature
+        slot_thickness = self.wall_thickness / 2 # Thickness of the tongue/groove along the arc
+        slot_depth = self.wall_thickness # How far it extends radially into/out of the segment
+        single_slot_height = self.height / 4 # Height of a single slot
+        slot_vertical_spacing = self.height / 4 # Space between slots and from top/bottom
+
+        # Tolerance for the female part to ensure a snug fit
+        tolerance = epsilon * 2
+
+        # Calculate the radial position for the slot (mid-point of the segment's radial extent)
+        mid_radial_pos = (self.radius_major + self.radius_minor) / 2
+
+        # --- Create the male (tongue) features ---
+        # Base cube for the tongue: [radial_extent, circumferential_thickness, height]
+        tongue_base = cube([slot_depth, slot_thickness, single_slot_height], center=True)
+
+        # Top tongue
+        tongue_male_top = tongue_base.translate([mid_radial_pos, -slot_thickness/2, 0])
+        tongue_male_top = tongue_male_top.up(self.height - slot_vertical_spacing - single_slot_height/2) # Position near top
+
+        # Bottom tongue
+        tongue_male_bottom = tongue_base.translate([mid_radial_pos, -slot_thickness/2, 0])
+        tongue_male_bottom = tongue_male_bottom.up(slot_vertical_spacing + single_slot_height/2) # Position near bottom
+
+        # --- Create the female (groove) features (negative space) ---
+        # Base cube for the groove: slightly larger than tongue for tolerance
+        groove_base = cube([slot_depth + tolerance, slot_thickness + tolerance, single_slot_height + tolerance], center=True)
+
+        # Top groove
+        groove_female_top = groove_base.translate([mid_radial_pos, (slot_thickness + tolerance)/2, 0])
+        groove_female_top = groove_female_top.up(self.height - slot_vertical_spacing - (single_slot_height + tolerance)/2)
+
+        # Bottom groove
+        groove_female_bottom = groove_base.translate([mid_radial_pos, (slot_thickness + tolerance)/2, 0])
+        groove_female_bottom = groove_female_bottom.up(slot_vertical_spacing + (single_slot_height + tolerance)/2)
+
+        # Add male features to the segment at angle=0 (along X-axis)
+        self.object += tongue_male_top
+        self.object += tongue_male_bottom
+
+        # Subtract female features from the segment at angle=self.angle
+        # Rotate the negative groove to the other side of the segment
+        self.object -= groove_female_top.rotate([0, 0, self.angle])
+        self.object -= groove_female_bottom.rotate([0, 0, self.angle])
 
         return self
 
@@ -562,7 +718,6 @@ def spray_rig(
     assert (
         initial_radius < final_radius
     ), "ERROR: invalid nozzle and tube diameter, did you enter the radius measurements backwards?"
-    assert (
         nozzle_diameter < tube_diameter
     ), "ERROR: nozzles must be smaller than the tubing!"
 
@@ -600,44 +755,36 @@ def spray_rig(
     print("final_num_segments: ", num_segments)
 
 
-    #TODO: inlet is just middle
-    for enum in ["middle",  "endcap"]:
-        #Configure
-        Spray_Rig = SprayRig()\
-                            .rad_maj(final_radius)\
-                            .rad_min(initial_radius)\
-                            .ang(angle)\
-                            .hght(rig_depth+2*wall_thickness)\
-                            .second_rad_maj(final_radius-wall_thickness)\
-                            .second_rad_min(initial_radius+wall_thickness)\
-                            .second_ang(shell_angle)\
-                            .second_hght(rig_depth)\
-                            .nozzle_rad(nozzle_diameter/2)\
-                            .nozzle_hght(wall_thickness)\
-                            .nozzle_wall_thick(nozzle_wall_thickness)\
-                            .wall_thick(wall_thickness)\
-                            .lid_thick(lid_thickness)\
-                            .lid_len(lid_length)\
-                            .tube_diam(tube_diameter)\
-                            .inlet_thick(inlet_thickness)\
-                            .center(True)\
-                            .circle_arc_shell()\
-                            .nozzle_array()\
-                            .add_lip()
-        #Specify
-        cur = getattr(Spray_Rig, enum)()
-        Spray_Rig = cur.build()
-        Spray_Rig = Spray_Rig.rotate([90,0,0])
-        #Render
-        filename = None
-        if enum == "middle":
-            filename = "x" + str(num_segments-1) + "_" + "Spray_Rig_Segments" + "_" + enum
-        else:
-            filename = "Spray_Rig_Segment" + "_" + enum
+    # Configure and build a single segment type with slots
+    Spray_Rig = SprayRig()\
+                        .rad_maj(final_radius)\
+                        .rad_min(initial_radius)\
+                        .ang(angle)\
+                        .hght(rig_depth+2*wall_thickness)\
+                        .second_rad_maj(final_radius-wall_thickness)\
+                        .second_rad_min(initial_radius+wall_thickness)\
+                        .second_ang(shell_angle)\
+                        .second_hght(rig_depth)\
+                        .nozzle_rad(nozzle_diameter/2)\
+                        .nozzle_hght(wall_thickness)\
+                        .nozzle_wall_thick(nozzle_wall_thickness)\
+                        .wall_thick(wall_thickness)\
+                        .lid_thick(lid_thickness)\
+                        .lid_len(lid_length)\
+                        .tube_diam(tube_diameter)\
+                        .inlet_thick(inlet_thickness)\
+                        .center(True)\
+                        .circle_arc_shell()\
+                        .nozzle_array()\
+                        .add_lip()\
+                        .add_slot_connections() # New call to add the slotting mechanism
 
-        #filename = "x" + str(num_segments) + "_" + "Spray_Rig_Segments" + "_" + enum
-        scad_render_to_file(Spray_Rig, filename + ".scad")
-        os.system("openscad -o " + filename + ".stl " + filename + ".scad &")
+    Spray_Rig = Spray_Rig.build()
+    Spray_Rig = Spray_Rig.rotate([90,0,0]) # Keep the rotation for rendering
+
+    filename = "Spray_Rig_Segment_Slotted" # Simplified filename
+    scad_render_to_file(Spray_Rig, filename + ".scad")
+    os.system("openscad -o " + filename + ".stl " + filename + ".scad &")
 
 if __name__ == "__main__":
     config = toml.load("configuration.toml")
