@@ -403,9 +403,8 @@ def spray_rig(
     # Nonesense assertions:
     assert initial_radius < final_radius, \
         "ERROR: invalid nozzle and tube diameter, did you enter the radius measurements backwards?"
-    assert \
-        nozzle_diameter < tube_diameter
-    ), "ERROR: nozzles must be smaller than the tubing!"
+    assert nozzle_diameter < tube_diameter, \
+        "ERROR: nozzles must be smaller than the tubing!"
 
     #Calculate the size of each segment's arclength and number of segments
     final_circumference = 2 * pi * final_radius
