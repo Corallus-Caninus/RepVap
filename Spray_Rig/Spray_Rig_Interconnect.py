@@ -480,18 +480,18 @@ def spray_rig(
     middle_segment_rig.add_slot_connections(SLOT_TYPE_MALE, SLOT_TYPE_FEMALE) # Middle segment: male on one side, female on other
 
     middle_segment_object = middle_segment_rig.build()
-    middle_segment_object = middle_segment_object.rotate([90, 0, 0])
-    scad_render_to_file(middle_segment_object, "Spray_Rig_Segment_Middle_Slotted.scad")
-    os.system("openscad -o Spray_Rig_Segment_Middle_Slotted.stl Spray_Rig_Segment_Middle_Slotted.scad &")
+    middle_segment_object = middle_segment_object.rotate([90, 0, 0]) # Rotate for rendering orientation
+    scad_render_to_file(middle_segment_object, "Spray_Rig_Segment_Middle_Slotted.scad") # Create the SCAD file
+    os.system("openscad -o Spray_Rig_Segment_Middle_Slotted.stl Spray_Rig_Segment_Middle_Slotted.scad") # Render to STL
 
     # Generate Endcap Segment
     endcap_segment_rig = _configure_base_spray_rig(initial_radius, final_radius, angle, rig_depth, wall_thickness, shell_angle, nozzle_diameter, nozzle_wall_thickness, lid_thickness, lid_length, tube_diameter, inlet_thickness)
     endcap_segment_rig.add_slot_connections(SLOT_TYPE_MALE, SLOT_TYPE_NONE) # Endcap segment: male on one side, no slot on other
 
     endcap_segment_object = endcap_segment_rig.build()
-    endcap_segment_object = endcap_segment_object.rotate([90, 0, 0])
-    scad_render_to_file(endcap_segment_object, "Spray_Rig_Segment_Endcap_Slotted.scad")
-    os.system("openscad -o Spray_Rig_Segment_Endcap_Slotted.stl Spray_Rig_Segment_Endcap_Slotted.scad &")
+    endcap_segment_object = endcap_segment_object.rotate([90, 0, 0]) # Rotate for rendering orientation
+    scad_render_to_file(endcap_segment_object, "Spray_Rig_Segment_Endcap_Slotted.scad") # Create the SCAD file
+    os.system("openscad -o Spray_Rig_Segment_Endcap_Slotted.stl Spray_Rig_Segment_Endcap_Slotted.scad") # Render to STL
 
 if __name__ == "__main__":
     config = toml.load("configuration.toml")
