@@ -308,11 +308,11 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         tongue_base = cube([slot_depth, slot_thickness, single_slot_height], center=True)
 
         # Top tongue
-        tongue_male_top = tongue_base.translate([mid_radial_pos, -slot_thickness/2, 0])
+        tongue_male_top = tongue_base.translate([mid_radial_pos, slot_thickness/2, 0])
         tongue_male_top = tongue_male_top.up(height - slot_vertical_spacing - single_slot_height/2)
 
         # Bottom tongue
-        tongue_male_bottom = tongue_base.translate([mid_radial_pos, -slot_thickness/2, 0])
+        tongue_male_bottom = tongue_base.translate([mid_radial_pos, slot_thickness/2, 0])
         tongue_male_bottom = tongue_male_bottom.up(slot_vertical_spacing + single_slot_height/2)
         return tongue_male_top + tongue_male_bottom
 
@@ -323,11 +323,11 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         groove_base = cube([slot_depth + tolerance, slot_thickness + tolerance, single_slot_height + tolerance], center=True)
 
         # Top groove
-        groove_female_top = groove_base.translate([mid_radial_pos, (slot_thickness + tolerance)/2, 0])
+        groove_female_top = groove_base.translate([mid_radial_pos, -(slot_thickness + tolerance)/2, 0])
         groove_female_top = groove_female_top.up(height - slot_vertical_spacing - (single_slot_height + tolerance)/2)
 
         # Bottom groove
-        groove_female_bottom = groove_base.translate([mid_radial_pos, (slot_thickness + tolerance)/2, 0])
+        groove_female_bottom = groove_base.translate([mid_radial_pos, -(slot_thickness + tolerance)/2, 0])
         groove_female_bottom = groove_female_bottom.up(slot_vertical_spacing + (single_slot_height + tolerance)/2)
         return groove_female_top + groove_female_bottom
 
