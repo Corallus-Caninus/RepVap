@@ -454,28 +454,26 @@ def spray_rig(
     # Helper function to configure a base SprayRig segment
     def _configure_base_spray_rig(initial_radius, final_radius, angle, rig_depth, wall_thickness, shell_angle, nozzle_diameter, nozzle_wall_thickness, lid_thickness, lid_length, tube_diameter, inlet_thickness):
         return SprayRig() \
-        .rad_maj(final_radius) \
-        .rad_min(initial_radius) \
-        .ang(angle) \
-        .hght(rig_depth + 2 * wall_thickness) \
-        .second_rad_maj(final_radius - wall_thickness) \
-        .second_rad_min(initial_radius + wall_thickness) \
-        .second_ang(shell_angle) \
-        .second_hght(rig_depth) \
-        .nozzle_rad(nozzle_diameter / 2) \
-        .nozzle_hght(wall_thickness) \ # nozzle_height is typically wall_thickness
-        .nozzle_rad(nozzle_diameter / 2) \
-        .nozzle_hght(wall_thickness) \ # nozzle_height is typically wall_thickness
-        .nozzle_wall_thick(nozzle_wall_thickness) \
-        .wall_thick(wall_thickness) \
-        .lid_thick(lid_thickness) \
-        .lid_len(lid_length) \
-        .tube_diam(tube_diameter) \
-        .inlet_thick(inlet_thickness) \
-        .center(True) \
-        .circle_arc_shell() \
-        .nozzle_array() \
-        .add_lip()
+            .rad_maj(final_radius) \
+            .rad_min(initial_radius) \
+            .ang(angle) \
+            .hght(rig_depth + 2 * wall_thickness) \
+            .second_rad_maj(final_radius - wall_thickness) \
+            .second_rad_min(initial_radius + wall_thickness) \
+            .second_ang(shell_angle) \
+            .second_hght(rig_depth) \
+            .nozzle_rad(nozzle_diameter / 2) \
+            .nozzle_hght(wall_thickness) \
+            .nozzle_wall_thick(nozzle_wall_thickness) \
+            .wall_thick(wall_thickness) \
+            .lid_thick(lid_thickness) \
+            .lid_len(lid_length) \
+            .tube_diam(tube_diameter) \
+            .inlet_thick(inlet_thickness) \
+            .center(True) \
+            .circle_arc_shell() \
+            .nozzle_array() \
+            .add_lip() # nozzle_height is typically wall_thickness
 
     # Generate Middle Segment
     middle_segment_rig = _configure_base_spray_rig(initial_radius, final_radius, angle, rig_depth, wall_thickness, shell_angle, nozzle_diameter, nozzle_wall_thickness, lid_thickness, lid_length, tube_diameter, inlet_thickness)
