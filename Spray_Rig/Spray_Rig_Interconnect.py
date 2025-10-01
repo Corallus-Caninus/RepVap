@@ -464,6 +464,8 @@ def spray_rig(
         .second_hght(rig_depth) \
         .nozzle_rad(nozzle_diameter / 2) \
         .nozzle_hght(wall_thickness) \ # nozzle_height is typically wall_thickness
+        .nozzle_rad(nozzle_diameter / 2) \
+        .nozzle_hght(wall_thickness) \ # nozzle_height is typically wall_thickness
         .nozzle_wall_thick(nozzle_wall_thickness) \
         .wall_thick(wall_thickness) \
         .lid_thick(lid_thickness) \
