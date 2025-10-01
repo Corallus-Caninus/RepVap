@@ -8,6 +8,10 @@ from solid2 import *
 import toml
 epsilon = 0.0001
 
+# Define slot types for clarity
+SLOT_TYPE_NONE = 0
+SLOT_TYPE_MALE = 1
+SLOT_TYPE_FEMALE = 2
 
 '''
 a fastener and helper methods
@@ -298,15 +302,47 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         #create a rectangle of height rig_depth and width wall_thickness 
         return self
     '''
-    Adds male (tongue) and female (groove) slot connections to the radial faces
-    of the segment, allowing multiple segments to interlock.
+    Helper to create the male (tongue) slot features.
     '''
-    def add_slot_connections(self):
+    def _create_male_slot_features(self, mid_radial_pos, slot_thickness, slot_depth, single_slot_height, slot_vertical_spacing, height):
+        tongue_base = cube([slot_depth, slot_thickness, single_slot_height], center=True)
+
+        # Top tongue
+        tongue_male_top = tongue_base.translate([mid_radial_pos, -slot_thickness/2, 0])
+        tongue_male_top = tongue_male_top.up(height - slot_vertical_spacing - single_slot_height/2)
+
+        # Bottom tongue
+        tongue_male_bottom = tongue_base.translate([mid_radial_pos, -slot_thickness/2, 0])
+        tongue_male_bottom = tongue_male_bottom.up(slot_vertical_spacing + single_slot_height/2)
+        return tongue_male_top + tongue_male_bottom
+
+    '''
+    Helper to create the female (groove) slot features (negative space).
+    '''
+    def _create_female_slot_features(self, mid_radial_pos, slot_thickness, slot_depth, single_slot_height, slot_vertical_spacing, height, tolerance):
+        groove_base = cube([slot_depth + tolerance, slot_thickness + tolerance, single_slot_height + tolerance], center=True)
+
+        # Top groove
+        groove_female_top = groove_base.translate([mid_radial_pos, (slot_thickness + tolerance)/2, 0])
+        groove_female_top = groove_female_top.up(height - slot_vertical_spacing - (single_slot_height + tolerance)/2)
+
+        # Bottom groove
+        groove_female_bottom = groove_base.translate([mid_radial_pos, (slot_thickness + tolerance)/2, 0])
+        groove_female_bottom = groove_female_bottom.up(slot_vertical_spacing + (single_slot_height + tolerance)/2)
+        return groove_female_top + groove_female_bottom
+
+    '''
+    Adds male (tongue) and/or female (groove) slot connections to the radial faces
+    of the segment, allowing multiple segments to interlock.
+    left_slot_type: SLOT_TYPE_NONE, SLOT_TYPE_MALE, or SLOT_TYPE_FEMALE for the side at angle 0.
+    right_slot_type: SLOT_TYPE_NONE, SLOT_TYPE_MALE, or SLOT_TYPE_FEMALE for the side at self.angle.
+    '''
+    def add_slot_connections(self, left_slot_type, right_slot_type):
         # Dimensions for the slot feature
-        slot_thickness = self.wall_thickness / 2 # Thickness of the tongue/groove along the arc
-        slot_depth = self.wall_thickness # How far it extends radially into/out of the segment
-        single_slot_height = self.height / 4 # Height of a single slot
-        slot_vertical_spacing = self.height / 4 # Space between slots and from top/bottom
+        slot_thickness = self.wall_thickness / 2
+        slot_depth = self.wall_thickness
+        single_slot_height = self.height / 4
+        slot_vertical_spacing = self.height / 4
 
         # Tolerance for the female part to ensure a snug fit
         tolerance = epsilon * 2
@@ -314,52 +350,27 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         # Calculate the radial position for the slot (mid-point of the segment's radial extent)
         mid_radial_pos = (self.radius_major + self.radius_minor) / 2
 
-        # --- Create the male (tongue) features ---
-        # Base cube for the tongue: [radial_extent, circumferential_thickness, height]
-        tongue_base = cube([slot_depth, slot_thickness, single_slot_height], center=True)
+        # Create the base male and female features
+        male_features = self._create_male_slot_features(mid_radial_pos, slot_thickness, slot_depth, single_slot_height, slot_vertical_spacing, self.height)
+        female_features = self._create_female_slot_features(mid_radial_pos, slot_thickness, slot_depth, single_slot_height, slot_vertical_spacing, self.height, tolerance)
 
-        # Top tongue
-        tongue_male_top = tongue_base.translate([mid_radial_pos, -slot_thickness/2, 0])
-        tongue_male_top = tongue_male_top.up(self.height - slot_vertical_spacing - single_slot_height/2) # Position near top
+        # Apply features to the left side (angle 0)
+        if left_slot_type == SLOT_TYPE_MALE:
+            self.object += male_features
+        elif left_slot_type == SLOT_TYPE_FEMALE:
+            self.object -= female_features
 
-        # Bottom tongue
-        tongue_male_bottom = tongue_base.translate([mid_radial_pos, -slot_thickness/2, 0])
-        tongue_male_bottom = tongue_male_bottom.up(slot_vertical_spacing + single_slot_height/2) # Position near bottom
-
-        # --- Create the female (groove) features (negative space) ---
-        # Base cube for the groove: slightly larger than tongue for tolerance
-        groove_base = cube([slot_depth + tolerance, slot_thickness + tolerance, single_slot_height + tolerance], center=True)
-
-        # Top groove
-        groove_female_top = groove_base.translate([mid_radial_pos, (slot_thickness + tolerance)/2, 0])
-        groove_female_top = groove_female_top.up(self.height - slot_vertical_spacing - (single_slot_height + tolerance)/2)
-
-        # Bottom groove
-        groove_female_bottom = groove_base.translate([mid_radial_pos, (slot_thickness + tolerance)/2, 0])
-        groove_female_bottom = groove_female_bottom.up(slot_vertical_spacing + (single_slot_height + tolerance)/2)
-
-        # Add male features to the segment at angle=0 (along X-axis)
-        self.object += tongue_male_top
-        self.object += tongue_male_bottom
-
-        # Subtract female features from the segment at angle=self.angle
-        # Rotate the negative groove to the other side of the segment
-        self.object -= groove_female_top.rotate([0, 0, self.angle])
-        self.object -= groove_female_bottom.rotate([0, 0, self.angle])
+        # Apply features to the right side (angle self.angle)
+        if right_slot_type == SLOT_TYPE_MALE:
+            self.object += male_features.rotate([0, 0, self.angle])
+        elif right_slot_type == SLOT_TYPE_FEMALE:
+            self.object -= female_features.rotate([0, 0, self.angle])
 
         return self
 
-    #NOTE: can always pass tubing through an inlet if we want to rush test SprayRig 
-    #TODO: @DEPRECATED # This comment is now outdated, as these methods are removed.
-    '''
-    Add an endcap that allows passthrough of the tubing via a cylinder
-    with pagoda nozzles (cones that increase the cylinder diameter to
-    seal the tubing) on top and bottom. Also doesnt add interconnect
-    '''
-    def inlet(self):
-        #just call middle()
-        # These methods are removed as they are replaced by the new slotting mechanism.
-        pass
+    # The inlet method is removed as it is replaced by the new slotting mechanism.
+    # def inlet(self):
+    #     pass
 
     def build(self):
         return self.object
@@ -440,8 +451,9 @@ def spray_rig(
     print("final_num_segments: ", num_segments)
 
 
-    # Configure and build a single segment type with slots
-    Spray_Rig = SprayRig() \
+    # Helper function to configure a base SprayRig segment
+    def _configure_base_spray_rig(initial_radius, final_radius, angle, rig_depth, wall_thickness, shell_angle, nozzle_diameter, nozzle_wall_thickness, lid_thickness, lid_length, tube_diameter, inlet_thickness):
+        return SprayRig() \
         .rad_maj(final_radius) \
         .rad_min(initial_radius) \
         .ang(angle) \
@@ -451,7 +463,7 @@ def spray_rig(
         .second_ang(shell_angle) \
         .second_hght(rig_depth) \
         .nozzle_rad(nozzle_diameter / 2) \
-        .nozzle_hght(wall_thickness) \
+        .nozzle_hght(wall_thickness) \ # nozzle_height is typically wall_thickness
         .nozzle_wall_thick(nozzle_wall_thickness) \
         .wall_thick(wall_thickness) \
         .lid_thick(lid_thickness) \
@@ -461,15 +473,25 @@ def spray_rig(
         .center(True) \
         .circle_arc_shell() \
         .nozzle_array() \
-        .add_lip() \
-        .add_slot_connections() # New call to add the slotting mechanism
+        .add_lip()
 
-    Spray_Rig = Spray_Rig.build()
-    Spray_Rig = Spray_Rig.rotate([90, 0, 0]) # Keep the rotation for rendering
+    # Generate Middle Segment
+    middle_segment_rig = _configure_base_spray_rig(initial_radius, final_radius, angle, rig_depth, wall_thickness, shell_angle, nozzle_diameter, nozzle_wall_thickness, lid_thickness, lid_length, tube_diameter, inlet_thickness)
+    middle_segment_rig.add_slot_connections(SLOT_TYPE_MALE, SLOT_TYPE_FEMALE) # Middle segment: male on one side, female on other
 
-    filename = "Spray_Rig_Segment_Slotted" # Simplified filename
-    scad_render_to_file(Spray_Rig, filename + ".scad")
-    os.system("openscad -o " + filename + ".stl " + filename + ".scad &")
+    middle_segment_object = middle_segment_rig.build()
+    middle_segment_object = middle_segment_object.rotate([90, 0, 0])
+    scad_render_to_file(middle_segment_object, "Spray_Rig_Segment_Middle_Slotted.scad")
+    os.system("openscad -o Spray_Rig_Segment_Middle_Slotted.stl Spray_Rig_Segment_Middle_Slotted.scad &")
+
+    # Generate Endcap Segment
+    endcap_segment_rig = _configure_base_spray_rig(initial_radius, final_radius, angle, rig_depth, wall_thickness, shell_angle, nozzle_diameter, nozzle_wall_thickness, lid_thickness, lid_length, tube_diameter, inlet_thickness)
+    endcap_segment_rig.add_slot_connections(SLOT_TYPE_MALE, SLOT_TYPE_NONE) # Endcap segment: male on one side, no slot on other
+
+    endcap_segment_object = endcap_segment_rig.build()
+    endcap_segment_object = endcap_segment_object.rotate([90, 0, 0])
+    scad_render_to_file(endcap_segment_object, "Spray_Rig_Segment_Endcap_Slotted.scad")
+    os.system("openscad -o Spray_Rig_Segment_Endcap_Slotted.stl Spray_Rig_Segment_Endcap_Slotted.scad &")
 
 if __name__ == "__main__":
     config = toml.load("configuration.toml")
