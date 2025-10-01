@@ -304,32 +304,36 @@ class SprayRig(BuildSprayRig, CirclePartitions):
     '''
     Helper to create the male (tongue) slot features.
     '''
-    def _create_male_slot_features(self, mid_radial_pos, slot_thickness, slot_depth, single_slot_height, slot_vertical_spacing, height):
-        tongue_base = cube([slot_depth, slot_thickness, single_slot_height], center=True)
+    def _create_male_slot_features(self, slot_radial_extent, slot_circumferential_width, slot_vertical_height, slot_vertical_offset):
+        tongue_base = cube([slot_radial_extent, slot_circumferential_width, slot_vertical_height], center=True)
 
-        # Top tongue
-        tongue_male_top = tongue_base.translate([mid_radial_pos, slot_thickness/2, 0])
-        tongue_male_top = tongue_male_top.up(height - slot_vertical_spacing - single_slot_height/2)
-
-        # Bottom tongue
-        tongue_male_bottom = tongue_base.translate([mid_radial_pos, slot_thickness/2, 0])
-        tongue_male_bottom = tongue_male_bottom.up(slot_vertical_spacing + single_slot_height/2)
-        return tongue_male_top + tongue_male_bottom
+        # Position the tongue:
+        # Radial: Start at self.radius_minor and extend slot_radial_extent
+        # Circumferential: Protrude from the Y=0 plane
+        # Vertical: Position above the bottom wall_thickness
+        male_slot = tongue_base.translate([
+            self.radius_minor + slot_radial_extent / 2, # Radial center
+            slot_circumferential_width / 2,             # Protrude circumferentially
+            slot_vertical_offset + slot_vertical_height / 2 # Vertical center
+        ])
+        return male_slot
 
     '''
     Helper to create the female (groove) slot features (negative space).
     '''
-    def _create_female_slot_features(self, mid_radial_pos, slot_thickness, slot_depth, single_slot_height, slot_vertical_spacing, height, tolerance):
-        groove_base = cube([slot_depth + tolerance, slot_thickness + tolerance, single_slot_height + tolerance], center=True)
+    def _create_female_slot_features(self, slot_radial_extent, slot_circumferential_width, slot_vertical_height, slot_vertical_offset, tolerance):
+        groove_base = cube([slot_radial_extent + tolerance, slot_circumferential_width + tolerance, slot_vertical_height + tolerance], center=True)
 
-        # Top groove
-        groove_female_top = groove_base.translate([mid_radial_pos, -(slot_thickness + tolerance)/2, 0])
-        groove_female_top = groove_female_top.up(height - slot_vertical_spacing - (single_slot_height + tolerance)/2)
-
-        # Bottom groove
-        groove_female_bottom = groove_base.translate([mid_radial_pos, -(slot_thickness + tolerance)/2, 0])
-        groove_female_bottom = groove_female_bottom.up(slot_vertical_spacing + (single_slot_height + tolerance)/2)
-        return groove_female_top + groove_female_bottom
+        # Position the groove:
+        # Radial: Start at self.radius_minor and extend slot_radial_extent
+        # Circumferential: Recess into the Y=0 plane
+        # Vertical: Position above the bottom wall_thickness
+        female_slot = groove_base.translate([
+            self.radius_minor + slot_radial_extent / 2, # Radial center
+            -(slot_circumferential_width + tolerance) / 2, # Recess circumferentially
+            slot_vertical_offset + (slot_vertical_height + tolerance) / 2 # Vertical center
+        ])
+        return female_slot
 
     '''
     Adds male (tongue) and/or female (groove) slot connections to the radial faces
@@ -339,20 +343,17 @@ class SprayRig(BuildSprayRig, CirclePartitions):
     '''
     def add_slot_connections(self, left_slot_type, right_slot_type):
         # Dimensions for the slot feature
-        slot_thickness = self.wall_thickness / 2
-        slot_depth = self.wall_thickness
-        single_slot_height = self.height / 4
-        slot_vertical_spacing = self.height / 4
+        slot_circumferential_width = self.wall_thickness
+        slot_radial_extent = self.radius_major - self.radius_minor
+        slot_vertical_height = self.height - 2 * self.wall_thickness
+        slot_vertical_offset = self.wall_thickness # Distance from bottom of segment to bottom of slot
 
         # Tolerance for the female part to ensure a snug fit
         tolerance = epsilon * 2
 
-        # Calculate the radial position for the slot (mid-point of the segment's radial extent)
-        mid_radial_pos = (self.radius_major + self.radius_minor) / 2
-
         # Create the base male and female features
-        male_features = self._create_male_slot_features(mid_radial_pos, slot_thickness, slot_depth, single_slot_height, slot_vertical_spacing, self.height)
-        female_features = self._create_female_slot_features(mid_radial_pos, slot_thickness, slot_depth, single_slot_height, slot_vertical_spacing, self.height, tolerance)
+        male_features = self._create_male_slot_features(slot_radial_extent, slot_circumferential_width, slot_vertical_height, slot_vertical_offset)
+        female_features = self._create_female_slot_features(slot_radial_extent, slot_circumferential_width, slot_vertical_height, slot_vertical_offset, tolerance)
 
         # Apply features to the left side (angle 0)
         if left_slot_type == SLOT_TYPE_MALE:
