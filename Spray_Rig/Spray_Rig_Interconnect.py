@@ -313,7 +313,8 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         # Vertical: Position above the bottom wall_thickness
         male_slot = tongue_base.translate([
             self.radius_minor + slot_radial_extent / 2, # Radial center
-            slot_circumferential_width / 2,             # Protrude circumferentially
+#            slot_circumferential_width / 2,             # Protrude circumferentially
+            0.5*slot_circumferential_width ,             # Protrude circumferentially
             slot_vertical_offset + slot_vertical_height / 2 # Vertical center
         ])
         return male_slot
@@ -330,7 +331,8 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         # Vertical: Position above the bottom wall_thickness
         female_slot = groove_base.translate([
             self.radius_minor + slot_radial_extent / 2, # Radial center
-            -(slot_circumferential_width + tolerance) / 2, # Recess circumferentially
+#            -(slot_circumferential_width + tolerance) / 2, # Recess circumferentially
+            -0.5*(slot_circumferential_width + tolerance) , # Recess circumferentially
             slot_vertical_offset + (slot_vertical_height + tolerance) / 2 # Vertical center
         ])
         return female_slot
@@ -345,7 +347,7 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         # Dimensions for the slot feature
         slot_circumferential_width = self.wall_thickness
         slot_radial_extent = self.radius_major - self.radius_minor
-        slot_vertical_height = self.height - 2 * self.wall_thickness
+        slot_vertical_height = 2*self.height - 2 * self.wall_thickness
         slot_vertical_offset = self.wall_thickness # Distance from bottom of segment to bottom of slot
 
         # Tolerance for the female part to ensure a snug fit
