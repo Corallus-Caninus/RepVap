@@ -311,12 +311,32 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         # Radial: Start at self.radius_minor and extend slot_radial_extent
         # Circumferential: Protrude from the Y=0 plane
         # Vertical: Position above the bottom wall_thickness
-        male_slot = tongue_base.translate([
+        male_slot = tongue_base.translate([ # Initial position of the solid tongue
             self.radius_minor + slot_radial_extent / 2, # Radial center
-#            slot_circumferential_width / 2,             # Protrude circumferentially
             0.5*slot_circumferential_width ,             # Protrude circumferentially
             slot_vertical_offset + slot_vertical_height / 2 # Vertical center
         ])
+
+        # Add a central fastener hole to the male tongue
+        fastener_diameter = self.wall_thickness / 2 # Example diameter for the fastener
+        # The hole needs to cut through the entire circumferential width of the tongue
+        fastener_hole_depth = slot_circumferential_width + epsilon * 4 
+
+        fastener_hole = cylinder(r=fastener_diameter / 2, h=fastener_hole_depth, center=True)
+        # Rotate the cylinder to be aligned with the circumferential direction (Y-axis)
+        fastener_hole = fastener_hole.rotate([0, 90, 0]) 
+
+        # Position the hole at the center of the male_slot
+        hole_center_radial = self.radius_minor + slot_radial_extent / 2
+        hole_center_vertical = slot_vertical_offset + slot_vertical_height / 2
+
+        fastener_hole = fastener_hole.translate([
+            hole_center_radial,
+            0, # Centered circumferentially (Y=0)
+            hole_center_vertical
+        ])
+
+        male_slot -= fastener_hole # Subtract the hole from the male tongue
         return male_slot
 
     '''
@@ -325,7 +345,7 @@ class SprayRig(BuildSprayRig, CirclePartitions):
     def _create_female_slot_features(self, slot_radial_extent, slot_circumferential_width, slot_vertical_height, slot_vertical_offset, tolerance):
         groove_base = cube([slot_radial_extent + tolerance, slot_circumferential_width + tolerance, slot_vertical_height + tolerance], center=True)
 
-        # Position the groove:
+        # Position the groove (negative space):
         # Radial: Start at self.radius_minor and extend slot_radial_extent
         # Circumferential: Recess into the Y=0 plane
         # Vertical: Position above the bottom wall_thickness
@@ -333,8 +353,29 @@ class SprayRig(BuildSprayRig, CirclePartitions):
             self.radius_minor + slot_radial_extent / 2, # Radial center
 #            -(slot_circumferential_width + tolerance) / 2, # Recess circumferentially
             -0.5*(slot_circumferential_width + tolerance) , # Recess circumferentially
-            slot_vertical_offset + (slot_vertical_height + tolerance) / 2 # Vertical center
+            slot_vertical_offset + (slot_vertical_height + tolerance) / 2 # Vertical center (adjusted for tolerance)
         ])
+
+        # Add a central clearance hole to the female groove
+        fastener_diameter = self.wall_thickness / 2
+        # The hole needs to cut through the entire circumferential width of the groove
+        fastener_hole_depth = slot_circumferential_width + tolerance + epsilon * 4 
+
+        # Slightly larger radius for clearance
+        fastener_clearance_hole = cylinder(r=fastener_diameter / 2 + epsilon, h=fastener_hole_depth, center=True) 
+        fastener_clearance_hole = fastener_clearance_hole.rotate([0, 90, 0]) 
+
+        # Position the hole at the center of the female_slot
+        hole_center_radial = self.radius_minor + slot_radial_extent / 2
+        hole_center_vertical = slot_vertical_offset + (slot_vertical_height + tolerance) / 2
+
+        fastener_clearance_hole = fastener_clearance_hole.translate([
+            hole_center_radial,
+            0, # Centered circumferentially (Y=0)
+            hole_center_vertical
+        ])
+
+        female_slot -= fastener_clearance_hole # Subtract the clearance hole from the female groove
         return female_slot
 
     '''
@@ -347,7 +388,7 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         # Dimensions for the slot feature
         slot_circumferential_width = self.wall_thickness
         slot_radial_extent = self.radius_major - self.radius_minor
-        slot_vertical_height = 2*self.height - 2 * self.wall_thickness
+        slot_vertical_height = self.height - 2 * self.wall_thickness # Corrected calculation
         slot_vertical_offset = self.wall_thickness # Distance from bottom of segment to bottom of slot
 
         # Tolerance for the female part to ensure a snug fit
