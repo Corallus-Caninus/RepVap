@@ -99,7 +99,7 @@ def mount_side_nozzles(rectangle_prism_dimensions, nozzle_direction, wall_thickn
    #same as above but add wall_thickness to rectangle_prism_dimensions[1] and [0] 
    #opening = translate([nozzle_direction[0]*wall_thickness, nozzle_direction[1]*wall_thickness, 0])(cube([rectangle_prism_dimensions[0] + wall_thickness, rectangle_prism_dimensions[1] + wall_thickness, rectangle_prism_dimensions[2]], center=True))
    #the above is correct but fix the indentation error
-    opening = translate([nozzle_direction[0]*wall_thickness, nozzle_direction[1]*wall_thickness, 0])(cube([rectangle_prism_dimensions[0] + 2*wall_thickness, rectangle_prism_dimensions[1], rectangle_prism_dimensions[2]+2*wall_thickness], center=True))
+    opening = translate([nozzle_direction[0]*wall_thickness, nozzle_direction[1]*wall_thickness, -wall_thickness])(cube([rectangle_prism_dimensions[0] + 2*wall_thickness, rectangle_prism_dimensions[1], rectangle_prism_dimensions[2]+2*wall_thickness], center=True))
 
     # inner = cube(rectangle_prism_dimensions, center=True)
 
