@@ -128,7 +128,6 @@ class CirclePartitions(BuildCirclePartitions):
     creates a circular arc which is a segment of a disk
     '''
     def circle_arc_segment(self, is_second=False):
-        #TODO: this is a bad solution
         if is_second:
             circle_segment = self.circle_segment(is_second=True)
             inner_rectangle = square([self.second_radius_minor, self.second_height])
@@ -138,70 +137,33 @@ class CirclePartitions(BuildCirclePartitions):
         else:
             circle_segment = self.circle_segment()
             inner_rectangle = square([self.radius_minor, self.height])
-            #NOTE: 2* here to account for openscads marginal errors
             inner_circle = rotate_extrude(angle=2*self.angle, _fn=500)(inner_rectangle)
             circle_arc_segment = circle_segment - inner_circle
-        #create a circle arc segment
         if self.Center and is_second:
             circle_arc_segment = circle_arc_segment.up(self.second_height/2)
-            #TODO: this is regardless of if Center
             circle_arc_segment = circle_arc_segment\
                                 .up(2*self.wall_thickness)\
                                 .rotate((self.angle-self.second_angle)/2)
         elif self.Center == True:
             circle_arc_segment = circle_arc_segment.up(self.height/2)
 
-#        if not is_second:
-#           #Female interconnect
-#           interface_angle = degrees(atan(self.height/self.radius_minor))
-#           female_interface = square([self.radius_major + (2*self.wall_thickness - self.second_height)/2  - self.radius_minor - 2*self.wall_thickness ,  self.wall_thickness/2 ])
-#           female_interface = rotate_extrude(interface_angle, _fn=500)(female_interface)
-#           female_edge = square([self.wall_thickness, self.height ])
-#           interface_angle = degrees(atan(self.height/self.radius_minor))
-#           female_edge = right(self.radius_minor)(female_edge)
-#           female_edge = rotate_extrude(interface_angle, _fn=500)(female_edge)
-#           female_edge = female_edge.down(self.height/2)
-#           female_top = female_interface.up(self.height/2 - self.wall_thickness/2)
-#           female_bottom = female_interface.up(-self.height/2 )
-#           female_interface = female_top + female_bottom+ female_edge
-#           female_interface = female_interface.up((self.height ))
-#           female_interface = female_interface.right(self.radius_minor)
-# 
-#           circle_arc_segment = circle_arc_segment- female_interface
-#
-#           # Male interconnect
-#           print("BUILDING INTERFACE")
-#           interface_angle = degrees(atan(self.height/self.radius_minor))
-#           male_interface = square([self.radius_major + (2*self.wall_thickness - self.second_height)/2  - self.radius_minor - 2*self.wall_thickness ,  self.wall_thickness/2 ])
-#           male_interface = rotate_extrude(interface_angle, _fn=500)(male_interface)
-#           male_edge = square([self.wall_thickness, self.height ])
-#           interface_angle = degrees(atan(self.height/self.radius_minor))
-#           male_edge = right(self.radius_minor)(male_edge)
-#           male_edge = rotate_extrude(interface_angle, _fn=500)(male_edge)
-#           male_edge = male_edge.down(self.height/2)
-#           male_top = male_interface.up(self.height/2 - self.wall_thickness/2)
-#           male_bottom = male_interface.up(-self.height/2 )
-#           male_interface = male_top + male_bottom+ male_edge
-#           male_interface = male_interface.up((self.height ))
-#           male_interface = male_interface.right(self.radius_minor)
-#           male_interface = rotate(self.angle)(male_interface)
-# 
-#           circle_arc_segment = circle_arc_segment+ male_interface
 
         self.object = circle_arc_segment
-        #move the circle arc segment to the origin
         return self
 
     def add_interconnect(self):
         #Female interconnect
         interface_angle = degrees(atan(self.height/self.radius_minor))
-        female_interface = square([self.radius_major + (2*self.wall_thickness - self.second_height)/2  - self.radius_minor - 2*self.wall_thickness ,  self.wall_thickness/2 ])
+#        female_interface = square([self.radius_major + (2*self.wall_thickness - self.second_height)/2  - self.radius_minor - 2*self.wall_thickness ,  self.wall_thickness/2 ])
+#NOTE: wall thickness on the radius is overkill for a epsilonish artifact
+        female_interface = square([self.radius_major  - self.radius_minor + self.wall_thickness,  self.wall_thickness/2 ])
         female_interface = rotate_extrude(interface_angle, _fn=500)(female_interface)
         female_edge = square([self.wall_thickness, self.height ])
         interface_angle = degrees(atan(self.height/self.radius_minor))
-        female_edge = right(self.radius_minor)(female_edge)
+        female_edge = right(self.radius_minor + 2*self.wall_thickness)(female_edge)
         female_edge = rotate_extrude(interface_angle, _fn=500)(female_edge)
         female_edge = female_edge.down(self.height/2)
+#        female_top = female_interface.up(self.height/2 - self.wall_thickness/2)
         female_top = female_interface.up(self.height/2 - self.wall_thickness/2)
         female_bottom = female_interface.up(-self.height/2 )
         female_interface = female_top + female_bottom+ female_edge
@@ -212,16 +174,18 @@ class CirclePartitions(BuildCirclePartitions):
         # Male interconnect
         print("BUILDING INTERFACE")
         interface_angle = degrees(atan(self.height/self.radius_minor))
-        male_interface = square([self.radius_major + (2*self.wall_thickness - self.second_height)/2  - self.radius_minor - 2*self.wall_thickness ,  self.wall_thickness/2 ])
+#        male_interface = square([self.radius_major + (2*self.wall_thickness - self.second_height)/2  - self.radius_minor - 2*self.wall_thickness ,  self.wall_thickness/2 ])
+        male_interface = square([self.radius_major  - self.radius_minor, self.wall_thickness/2 ])
         male_interface = rotate_extrude(interface_angle, _fn=500)(male_interface)
-        male_edge = square([self.wall_thickness, self.height ])
+        male_edge = square([self.wall_thickness/2, self.height])
         interface_angle = degrees(atan(self.height/self.radius_minor))
-        male_edge = right(self.radius_minor)(male_edge)
+        male_edge = right(self.radius_minor + 2*self.wall_thickness)(male_edge)
         male_edge = rotate_extrude(interface_angle, _fn=500)(male_edge)
         male_edge = male_edge.down(self.height/2)
+#        male_top = male_interface.up(self.height/2 - self.wall_thickness/2)
         male_top = male_interface.up(self.height/2 - self.wall_thickness/2)
         male_bottom = male_interface.up(-self.height/2 )
-        male_interface = male_top + male_bottom+ male_edge
+        male_interface = male_top + male_bottom+male_edge
         male_interface = male_interface.up((self.height ))
         male_interface = male_interface.right(self.radius_minor)
         male_interface = rotate(self.angle)(male_interface)
@@ -300,7 +264,8 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         #TODO: make conditional builds functional and elegant
         if self.lid_length is not None and self.lid_thickness is not None:
             #TODO: 3*self.lid_thickness and move thickness in.
-            total_track = floor((self.radius_major-self.radius_minor-2*self.lid_thickness)/nozzle_spacing)
+#            total_track = floor((self.radius_major-self.radius_minor-2*self.lid_thickness)/nozzle_spacing)#
+            total_track = floor((self.radius_major-self.radius_minor)/nozzle_spacing)#TODO: test this.
 
         print("num tracks: ", total_track)
         #NOTE: first iteration is skipped 
@@ -312,6 +277,7 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         i=0
         #i = ceil(self.lid_thickness/nozzle_spacing)
         #TODO: remove first radius iteration and first angle iteration
+        interface_angle = degrees(atan(self.height/self.radius_minor))
         while i < total_track:
             print("i: ", i)
             print("track: ", track)
@@ -321,12 +287,13 @@ class SprayRig(BuildSprayRig, CirclePartitions):
             nozzle_spacing_circumference = track_circumference/2*nozzle_spacing
             angle_iter = nozzle_spacing_circumference/track
             #TODO: TEST this line was init 0
-            cur_angle = 2*angle_iter
+#            cur_angle = 2*angle_iter
+            cur_angle = angle_iter
             print("angle_iter: ", angle_iter)
             #NOTE: we skip the first angle iter and the last for a 
             #      psuedo wall_thickness and correct later
             #cur_angle += angle_iter
-            while cur_angle < self.angle-angle_iter:
+            while cur_angle < 2*interface_angle + self.angle-angle_iter:
                 #tap a nozzle into the circle arc segment
                 self.object = self.object - cur_nozzle.rotate([0, 0, 270 + cur_angle])
                 cur_angle += angle_iter
@@ -355,8 +322,10 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         #outer_lip = outer_lip.up(self.height)
         #move to final_radius
         outer_lip_2d = outer_lip.right(self.radius_major + 1.5*self.lid_thickness)
+#        outer_lip_2d = outer_lip.right(self.radius_major + self.lid_thickness/2)
         #rotate extrude the final radius
         outer_lip = rotate_extrude(angle=self.angle, _fn=500)(outer_lip_2d)
+#        outer_lip = outer_lip.forward(self.lid_thickness)
 
         #create the inner lip
         #inner_lip = square([self.lid_thickness, self.lid_lengthself.height], center=True)\
@@ -365,9 +334,10 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         inner_lip = outer_lip_2d.left(2*self.lid_thickness)
         #rotate extrude the final radius
         inner_lip = rotate_extrude(angle=self.angle, _fn=500)(inner_lip)
+#        inner_lip = inner_lip.forward(self.lid_thickness)
         #now create a swept rectangle to fill the space above the lips
         cover = square([3*self.lid_thickness,self.height], center=True)
-        cover = cover.right(self.radius_major + self.lid_thickness/2)
+        cover = cover.right(self.radius_major + 1.5*self.lid_thickness)
         cover = rotate_extrude(angle=self.angle, _fn=500)(cover)
         cover = cover.up(outer_height/2 + self.height/2)
 
@@ -803,8 +773,8 @@ def spray_rig(
                             .inlet_thick(inlet_thickness)\
                             .center(True)\
                             .circle_arc_shell()\
-                            .add_lip()\
                             .add_interconnect()
+#                            .add_lip()\
 #                            .nozzle_array()
         #Specify
         cur = getattr(Spray_Rig, enum)()
