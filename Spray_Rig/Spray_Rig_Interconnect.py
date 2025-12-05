@@ -321,17 +321,17 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         #move up by rig_depth
         #outer_lip = outer_lip.up(self.height)
         #move to final_radius
-        outer_lip_2d = outer_lip.right(self.radius_major + 1.5*self.lid_thickness)
-#        outer_lip_2d = outer_lip.right(self.radius_major + self.lid_thickness/2)
+        outer_lip_flat = outer_lip.right(self.radius_major + 2.5*self.lid_thickness)
+#        outer_lip_flat = outer_lip.right(self.radius_major + self.lid_thickness/2)
         #rotate extrude the final radius
-        outer_lip = rotate_extrude(angle=self.angle, _fn=500)(outer_lip_2d)
+        outer_lip = rotate_extrude(angle=self.angle, _fn=500)(outer_lip_flat)
 #        outer_lip = outer_lip.forward(self.lid_thickness)
 
         #create the inner lip
         #inner_lip = square([self.lid_thickness, self.lid_lengthself.height], center=True)\
         #move to final_radius - lid_thickness
         #inner_lip = inner_lip.right(self.radius_major-2*self.lid_thickness)
-        inner_lip = outer_lip_2d.left(2*self.lid_thickness)
+        inner_lip = outer_lip_flat.left(2*self.lid_thickness)
         #rotate extrude the final radius
         inner_lip = rotate_extrude(angle=self.angle, _fn=500)(inner_lip)
 #        inner_lip = inner_lip.forward(self.lid_thickness)
@@ -773,8 +773,8 @@ def spray_rig(
                             .inlet_thick(inlet_thickness)\
                             .center(True)\
                             .circle_arc_shell()\
-                            .add_interconnect()
-#                            .add_lip()\
+                            .add_interconnect()\
+                            .add_lip()
 #                            .nozzle_array()
         #Specify
         cur = getattr(Spray_Rig, enum)()
