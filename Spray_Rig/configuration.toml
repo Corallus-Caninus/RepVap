@@ -8,7 +8,8 @@
 initial_radius = 65 #calculated at 73 for fan -~5mm for lip
 #final_radius = 100
 #production value:
-final_radius = 135#PREV VALUE
+#final_radius = 135#PREV VALUE
+final_radius = 141 # Lowes 5 gallon bucket is 300mm diameter = 150mm rad - 9mm lip to set the hinge to begin on the exact inner edge
 #the radius from the middle of the cylindrical container to the wall where the spray rig will be mounted.
 #final_radius = 145#PREV VALUE
 #final_radius = 162
