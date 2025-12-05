@@ -1,6 +1,12 @@
+# NOTE: consider 2d projections for printing a cut stencil guide
+#       https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/3D_to_2D_Projection
 
+# TODO: set geometry segments in header of render file instead of in geometry for production or in inheritance tree
 
+# TODO: consider a snap hinge that pokes through inlet and outlet to hang from
+#       bottom of lid with two small holes instead of large gash.
 
+# TODO: refactor so some features can be an inheritance expansion library for solidpython such as Fastener which I will be using alot. import here so updates from other projects get propagated to this project
 
 from math import *
 import os
@@ -8,10 +14,6 @@ from solid2 import *
 import toml
 epsilon = 0.0001
 
-# Define slot types for clarity
-SLOT_TYPE_NONE = 0
-SLOT_TYPE_MALE = 1
-SLOT_TYPE_FEMALE = 2
 
 '''
 a fastener and helper methods
@@ -58,6 +60,8 @@ class fastener(BuildFastener):
         self.object = base + hinge
         return self.object
 
+#TODO: should have inhereted object here so the state is shared with the child 
+#      class instead of being the primary member. all builders are fundamental objects (no children dependencies)
 '''
 a class that creates various partitions of circles extruded to 3D. Pizza slices that are integrated along the z axis.
 '''
@@ -149,6 +153,69 @@ class CirclePartitions(BuildCirclePartitions):
         elif self.Center == True:
             circle_arc_segment = circle_arc_segment.up(self.height/2)
 
+        if not is_second:
+           #Female interconnect
+           interface_angle = degrees(atan(self.height/self.radius_minor))
+           female_interface = square([self.radius_major + (2*self.wall_thickness - self.second_height)/2  - self.radius_minor - 2*self.wall_thickness ,  self.wall_thickness/2 ])
+           female_interface = rotate_extrude(interface_angle, _fn=500)(female_interface)
+           female_edge = square([self.wall_thickness, self.height ])
+           interface_angle = degrees(atan(self.height/self.radius_minor))
+#           interface_angle = 45
+           female_edge = right(self.radius_minor)(female_edge)
+           female_edge = rotate_extrude(interface_angle, _fn=500)(female_edge)
+#           female_edge = rotate([0, degrees(atan(self.wall_thickness/self.height))/2, 0])(female_edge)
+           female_edge = female_edge.down(self.height/2)
+           female_top = female_interface.up(self.height/2 - self.wall_thickness/2)
+           female_bottom = female_interface.up(-self.height/2 )
+           female_interface = female_top + female_bottom+ female_edge
+           female_interface = female_interface.up((self.height ))
+           female_interface = female_interface.right(self.radius_minor)
+ #          female_interface = female_interface.forward(self.height/2)
+ 
+           circle_arc_segment = circle_arc_segment- female_interface
+# #TODO: this is slopy and will artifact when we sweep the angles for larger radii circles
+#           female_interface = cube([self.radius_major + (2*self.wall_thickness - self.second_height)/2  - self.radius_minor - 2*self.wall_thickness ,self.height,  self.wall_thickness/2 ])
+# #          female_edge = cube([self.wall_thickness, self.height,self.height ])
+#           female_edge = square([self.wall_thickness, self.height ])
+#           edge_angle = atan(self.height/self.radius_minor)
+#           female_edge = left(self.radius_minor)(female_edge)
+#           print("EDGE ANGLE: " + str(edge_angle))
+#           female_edge = rotate_extrude(edge_angle, _fn=500)(female_edge)
+#           female_edge = left(-self.radius_minor)(female_edge)
+#           female_edge = female_edge.down(self.height/2)
+#           female_top = female_interface.up(self.height/2 - self.wall_thickness/2)
+#           female_bottom = female_interface.up(-self.height/2 )
+#           female_interface = female_top + female_bottom+ female_edge
+#           female_interface = female_interface.up((self.height ))
+#           female_interface = female_interface.right(self.radius_minor)
+# 
+           circle_arc_segment = circle_arc_segment- female_interface
+ 
+           # Male interconnect
+ #TODO: these need to be subtractive since the segments sum to a perfect circle. The interlocking should be subtractive from the segments for this reason
+ #TODO: the key parameterization is (height-second_height)/4 as the wall thickness for the interconnect.also (radius_major - radius_minor)/4 for the front and back interconnects
+           print("BUILDING INTERFACE")
+#           male_interface = cube([self.radius_major + (2*self.wall_thickness - self.second_height)/2  - self.radius_minor - 2*self.wall_thickness ,self.height,  self.wall_thickness/2 ])
+           interface_angle = degrees(atan(self.height/self.radius_minor))
+           male_interface = square([self.radius_major + (2*self.wall_thickness - self.second_height)/2  - self.radius_minor - 2*self.wall_thickness ,  self.wall_thickness/2 ])
+           male_interface = rotate_extrude(interface_angle, _fn=500)(male_interface)
+           male_edge = square([self.wall_thickness, self.height ])
+           interface_angle = degrees(atan(self.height/self.radius_minor))
+#           interface_angle = 45
+           male_edge = right(self.radius_minor)(male_edge)
+           male_edge = rotate_extrude(interface_angle, _fn=500)(male_edge)
+#           male_edge = rotate([0, degrees(atan(self.wall_thickness/self.height))/2, 0])(male_edge)
+           male_edge = male_edge.down(self.height/2)
+           male_top = male_interface.up(self.height/2 - self.wall_thickness/2)
+           male_bottom = male_interface.up(-self.height/2 )
+           male_interface = male_top + male_bottom+ male_edge
+           male_interface = male_interface.up((self.height ))
+           male_interface = male_interface.right(self.radius_minor)
+ #          male_interface = male_interface.forward(self.height/2)
+           male_interface = rotate(self.angle)(male_interface)
+ 
+           circle_arc_segment = circle_arc_segment+ male_interface
+
         self.object = circle_arc_segment
         #move the circle arc segment to the origin
         return self
@@ -166,6 +233,7 @@ class CirclePartitions(BuildCirclePartitions):
         circle_arc_shell = circle_arc_segment - second_circle_arc_segment
         self.object = circle_arc_shell
         return self
+
 
 '''
 builds a SprayRig by sequentially transforming a CirclePartition object via methods.
@@ -302,123 +370,280 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         #create a rectangle of height rig_depth and width wall_thickness 
         return self
     '''
-    Helper to create the male (tongue) slot features.
+    add male fasteners to one side of the SprayRig and female fasteners to the other
     '''
-    def _create_male_slot_features(self, slot_radial_extent, slot_circumferential_width, slot_vertical_height, slot_vertical_offset):
-        tongue_base = cube([slot_radial_extent, slot_circumferential_width, slot_vertical_height], center=True)
+    def add_fasteners(self):
+        #TODO: need to rework this. cant add last segment get rid of this feature altogether in favor of tubing interconnect.
+        #TODO: some of these operations are redundant and can be reduced
+        #create a fastener at final_radius - wall_thickness
+        far_fastener = fastener()\
+                        .hght(2*self.wall_thickness)\
+                        .wdth(self.wall_thickness/2)\
+                        .lngth(self.wall_thickness/2)\
+                        .hinge_hght(self.wall_thickness/2)\
+                        .hinge_wdth(self.wall_thickness/2)\
+                        .build()\
+                        .rotate(180)\
+                        .rotate([0,-90, 0])\
+                        .forward(self.radius_major)\
+                        .rotate([0, 0, self.angle-90])\
+                        .up(1.5*self.height)
+        near_fastener = fastener()\
+                        .hght(2*self.wall_thickness)\
+                        .wdth(self.wall_thickness/2)\
+                        .lngth(self.wall_thickness/2)\
+                        .hinge_hght(self.wall_thickness/2)\
+                        .hinge_wdth(self.wall_thickness/2)\
+                        .build()\
+                        .rotate(180)\
+                        .rotate([0, -90, 0])\
+                        .forward(self.radius_minor+self.wall_thickness/2)\
+                        .rotate([0, 0, self.angle-90])\
+                        .up(1.5*self.height)
+        bottom_near_fastener = fastener()\
+                        .hght(2*self.wall_thickness)\
+                        .wdth(self.wall_thickness/2)\
+                        .lngth(self.wall_thickness/2)\
+                        .hinge_hght(self.wall_thickness/2)\
+                        .hinge_wdth(self.wall_thickness/2)\
+                        .build()\
+                        .rotate(180)\
+                        .rotate([180, 90, 0])\
+                        .forward(self.radius_minor)\
+                        .rotate([0, 0, self.angle-90])\
+                        .up(0.5*self.height)
+        bottom_far_fastener = fastener()\
+                        .hght(2*self.wall_thickness)\
+                        .wdth(self.wall_thickness/2)\
+                        .lngth(self.wall_thickness/2)\
+                        .hinge_hght(self.wall_thickness/2)\
+                        .hinge_wdth(self.wall_thickness/2)\
+                        .build()\
+                        .rotate(180)\
+                        .rotate([180, 90, 0])\
+                        .forward(self.radius_major-self.wall_thickness/2)\
+                        .rotate([0, 0, self.angle-90])\
+                        .up(0.5*self.height)
 
-        # Position the tongue:
-        # Radial: Start at self.radius_minor and extend slot_radial_extent
-        # Circumferential: Protrude from the Y=0 plane
-        # Vertical: Position above the bottom wall_thickness
-        male_slot = tongue_base.translate([ # Initial position of the solid tongue
-            self.radius_minor + slot_radial_extent / 2, # Radial center
-            0.5*slot_circumferential_width ,             # Protrude circumferentially
-            slot_vertical_offset + slot_vertical_height / 2 # Vertical center
-        ])
+        #TODO: these should be part of fastener encapsulation
+        #same as above but a little extra to allow for flexing in the fit cavity
+        #we use fractions so the flexing scales with the majority/all materials
+        #(all SCAD should scale as much as possible and with as few parameters 
+        #as possible)
+        #TODO: now repeat the above rotations for negations
+        far_fastener_neg = fastener()\
+                        .hght(2*self.wall_thickness)\
+                        .wdth(self.wall_thickness/2)\
+                        .lngth(self.wall_thickness)\
+                        .hinge_hght(self.wall_thickness)\
+                        .hinge_wdth(self.wall_thickness)\
+                        .build()\
+                        .rotate(180)\
+                        .rotate([0,-90, 0])\
+                        .forward(self.radius_major)\
+                        .rotate([0, 0, self.angle-90])\
+                        .up(1.5*self.height)#TODO: this should be based on lngth
+        near_fastener_neg = fastener()\
+                        .hght(2*self.wall_thickness)\
+                        .wdth(self.wall_thickness/2)\
+                        .lngth(self.wall_thickness)\
+                        .hinge_hght(self.wall_thickness)\
+                        .hinge_wdth(self.wall_thickness)\
+                        .build()\
+                        .rotate(180)\
+                        .rotate([0, -90, 0])\
+                        .forward(self.radius_minor+self.wall_thickness/2)\
+                        .rotate([0, 0, self.angle-90])\
+                        .up(1.5*self.height)
+        bottom_near_fastener_neg = fastener()\
+                        .hght(2*self.wall_thickness)\
+                        .wdth(self.wall_thickness/2)\
+                        .lngth(self.wall_thickness)\
+                        .hinge_hght(self.wall_thickness)\
+                        .hinge_wdth(self.wall_thickness)\
+                        .build()\
+                        .rotate(180)\
+                        .rotate([180, 90, 0])\
+                        .forward(self.radius_minor)\
+                        .rotate([0, 0, self.angle-90])\
+                        .up(0.5*self.height)
+        bottom_far_fastener_neg = fastener()\
+                        .hght(2*self.wall_thickness)\
+                        .wdth(self.wall_thickness/2)\
+                        .lngth(self.wall_thickness)\
+                        .hinge_hght(self.wall_thickness)\
+                        .hinge_wdth(self.wall_thickness)\
+                        .build()\
+                        .rotate(180)\
+                        .rotate([180, 90, 0])\
+                        .forward(self.radius_major-self.wall_thickness/2)\
+                        .rotate([0, 0, self.angle-90])\
+                        .up(0.5*self.height)
 
-        # Add a central fastener hole to the male tongue
-        fastener_diameter = self.wall_thickness / 2 # Example diameter for the fastener
-        # The hole needs to cut through the entire circumferential width of the tongue
-        fastener_hole_depth = slot_circumferential_width + epsilon * 4 
+        #now add negative fasteners by rotating self.object 360-self.angle 
+        #degrees and subtracting from itself
+        self.object += far_fastener
+        self.object += near_fastener
+        self.object += bottom_near_fastener
+        self.object += bottom_far_fastener
+        #use neg objects instead
+        self.object -= far_fastener_neg.rotate(-self.angle)
+        self.object -= near_fastener_neg.rotate(-self.angle)
+        self.object -= bottom_near_fastener_neg.rotate(-self.angle)
+        self.object -= bottom_far_fastener_neg.rotate(-self.angle)
 
-        fastener_hole = cylinder(r=fastener_diameter / 2, h=fastener_hole_depth, center=True)
-        # Rotate the cylinder to be aligned with the circumferential direction (Y-axis)
-        fastener_hole = fastener_hole.rotate([0, 90, 0]) 
-
-        # Position the hole at the center of the male_slot
-        hole_center_radial = self.radius_minor + slot_radial_extent / 2
-        hole_center_vertical = slot_vertical_offset + slot_vertical_height / 2
-
-        fastener_hole = fastener_hole.translate([
-            hole_center_radial,
-            0, # Centered circumferentially (Y=0)
-            hole_center_vertical
-        ])
-
-        male_slot -= fastener_hole # Subtract the hole from the male tongue
-        return male_slot
-
+        return self
     '''
-    Helper to create the female (groove) slot features (negative space).
+    adds a tube interconnect and rotate subtracts just like fasteners so
+    each section can be plumbed together. conditionally cofigured with a
+    calling method.
     '''
-    def _create_female_slot_features(self, slot_radial_extent, slot_circumferential_width, slot_vertical_height, slot_vertical_offset, tolerance):
-        groove_base = cube([slot_radial_extent + tolerance, slot_circumferential_width + tolerance, slot_vertical_height + tolerance], center=True)
-
-        # Position the groove (negative space):
-        # Radial: Start at self.radius_minor and extend slot_radial_extent
-        # Circumferential: Recess into the Y=0 plane
-        # Vertical: Position above the bottom wall_thickness
-        female_slot = groove_base.translate([
-            self.radius_minor + slot_radial_extent / 2, # Radial center
-#            -(slot_circumferential_width + tolerance) / 2, # Recess circumferentially
-            -0.5*(slot_circumferential_width + tolerance) , # Recess circumferentially
-            slot_vertical_offset + (slot_vertical_height + tolerance) / 2 # Vertical center (adjusted for tolerance)
-        ])
-
-        # Add a central clearance hole to the female groove
-        fastener_diameter = self.wall_thickness / 2
-        # The hole needs to cut through the entire circumferential width of the groove
-        fastener_hole_depth = slot_circumferential_width + tolerance + epsilon * 4 
-
-        # Slightly larger radius for clearance
-        fastener_clearance_hole = cylinder(r=fastener_diameter / 2 + epsilon, h=fastener_hole_depth, center=True) 
-        fastener_clearance_hole = fastener_clearance_hole.rotate([0, 90, 0]) 
-
-        # Position the hole at the center of the female_slot
-        hole_center_radial = self.radius_minor + slot_radial_extent / 2
-        hole_center_vertical = slot_vertical_offset + (slot_vertical_height + tolerance) / 2
-
-        fastener_clearance_hole = fastener_clearance_hole.translate([
-            hole_center_radial,
-            0, # Centered circumferentially (Y=0)
-            hole_center_vertical
-        ])
-
-        female_slot -= fastener_clearance_hole # Subtract the clearance hole from the female groove
-        return female_slot
-
     '''
-    Adds male (tongue) and/or female (groove) slot connections to the radial faces
-    of the segment, allowing multiple segments to interlock.
-    left_slot_type: SLOT_TYPE_NONE, SLOT_TYPE_MALE, or SLOT_TYPE_FEMALE for the side at angle 0.
-    right_slot_type: SLOT_TYPE_NONE, SLOT_TYPE_MALE, or SLOT_TYPE_FEMALE for the side at self.angle.
+    accessor method for statefully configured interconnect method
     '''
-    def add_slot_connections(self, left_slot_type, right_slot_type):
-        # Dimensions for the slot feature
-        slot_circumferential_width = self.wall_thickness
-        slot_radial_extent = self.radius_major - self.radius_minor
-        slot_vertical_height = self.height - 2 * self.wall_thickness # Corrected calculation
-        slot_vertical_offset = self.wall_thickness # Distance from bottom of segment to bottom of slot
+    def middle(self):
+        self.is_endcap = False
+        self.is_inlet = False
+        return self
 
-        # Tolerance for the female part to ensure a snug fit
-        tolerance = epsilon * 2
+    #NOTE: can always pass tubing through an inlet if we want to rush test SprayRig 
+    #TODO: @DEPRECATED
+    '''
+    Add an endcap that allows passthrough of the tubing via a cylinder
+    with pagoda nozzles (cones that increase the cylinder diameter to
+    seal the tubing) on top and bottom. Also doesnt add interconnect
+    '''
+    def inlet(self):
+        #just call middle()
+        return self.middle()
+#        mean = (self.radius_major + self.radius_minor)/2
+#        #create the cylinder
+#        #endcap = cylinder(d=self.tube_diameter+self.inlet_thickness,\
+#        #                  h=self.height+self.wall_thickness,\
+#        #                  _fn=500, center=True)
+#        #endcap_neg = cylinder(d=self.tube_diameter, \
+#                #                    h=self.height+self.wall_thickness,\
+#                #                    _fn=500, center=True)
+#        endcap = cylinder(r=self.tube_diameter/2,\
+#                            h=self.height+self.tube_diameter/2,\
+#                            _fn=500, center=True)
+#        endcap_neg = cylinder(r=self.tube_diameter/2,\
+#                            h=self.height+self.wall_thickness,\
+#                            _fn=500, center=True)
+#        endcap -= endcap_neg
+#
+#        #TODO: this pagoda doesnt taste like snozberries.
+#        #add the pagoda fasteners
+#        pagoda_nozzle = cylinder(d1=self.tube_diameter+self.inlet_thickness, \
+#                                    d2=self.tube_diameter-self.inlet_thickness, \
+#                                    h=self.tube_diameter, _fn=500, center=True)
+#        #pagoda_nozzle_neg = cylinder(d1=self.tube_diameter, \
+#        pagoda_nozzle_neg = cylinder(r=self.tube_diameter/2-self.inlet_thickness, \
+#                                    h=self.tube_diameter, _fn=500, center=True)
+#        pagoda_nozzle -= pagoda_nozzle_neg
+#        pagoda_nozzle = pagoda_nozzle\
+#                .up(self.tube_diameter/2 + self.tube_diameter/4 + self.wall_thickness/2)
+#                                #.up(self.wall_thickness + self.height/2)
+#        endcap += pagoda_nozzle
+#        endcap = endcap.up(self.height/2 + self.tube_diameter/8)
+#
+#        #NOTE: 2*wall_thickness may be incorrect but passes my tests, 
+#        #      look here for render errors on inlet
+#        arc_angle = sin((self.tube_diameter+self.inlet_thickness+2*self.wall_thickness)/(2*mean))*180/pi
+#        #move into position on self.object
+#        #NOTE: up by 1.5*wall_thickness doesnt make sense to me but passes test, 
+#        #      look here for endcap related errors
+#        endcap = endcap\
+#                    .forward(mean)\
+#                    .rotate([0, 0, arc_angle-90])\
+#                    .up(self.height/2)
+#                    #.up(self.height+1.5*self.wall_thickness)
+#        endcap_neg = endcap_neg\
+#                    .forward(mean)\
+#                    .rotate([0, 0, arc_angle-90])\
+#                    .up(self.height/2)
+#                    #.up(self.height+1.5*self.wall_thickness)
+#        self.object += endcap
+#        self.object -= endcap_neg
+#
+#        #add the male only interconnect
+#        self.is_inlet = True
+#
+#        return self
+    '''
+    same as inlet but doesnt have outlet and the tube goes
+    all the way through.
+    '''
+    def endcap(self):
+        #TODO: extend the middle inside segment
+        mean = (self.radius_major + self.radius_minor)/2
+        #create the cylinder
+        #endcap = cylinder(d=self.tube_diameter+self.wall_thickness,\
+        #                  h=self.height+self.wall_thickness,\
+        #                  _fn=500, center=True)
+        #endcap_neg = cylinder(d=self.tube_diameter, \
+        #                    h=self.height+self.wall_thickness,\
+        #                    _fn=500, center=True)
+        #TODO: ensure nozzles dont hole this and there arent leaks
+#        endcap = cylinder(d=self.tube_diameter,\
+#                          h=self.height+self.wall_thickness+self.tube_diameter,\
+#                          _fn=500, center=True)
+#        #TODO: subtract after adding nozzles
+#        endcap_neg = cylinder(r=self.tube_diameter/2 - self.inlet_thickness, \
+#                            h=self.height+self.wall_thickness+self.tube_diameter,\
+#                            _fn=500, center=True)
+#        endcap -= endcap_neg
+#
+#        #add the pagoda fasteners
+#        #TODO: ensure inlet_thickness is sufficient, if this leaks alot of 
+#        #      pressure will be lost and wont be detected by the user.
+#        pagoda_nozzle = cylinder(d1=self.tube_diameter+self.inlet_thickness, \
+#                                    d2=self.tube_diameter, \
+#                                    h=self.tube_diameter, _fn=500, center=True)
+#        pagoda_nozzle_neg = cylinder(r=self.tube_diameter/2-self.inlet_thickness, \
+#                                    h=self.tube_diameter, _fn=500, center=True)
+#        #pagoda_nozzle_neg = cylinder(d1=self.tube_diameter, \
+#        #                            d2=self.tube_diameter, \
+#        #                            h=self.tube_diameter, _fn=500, center=True)
+#        pagoda_nozzle -= pagoda_nozzle_neg
+#
+#        pagoda_nozzle = pagoda_nozzle\
+#                                .up(self.wall_thickness + self.height/2 + self.tube_diameter/2)
+#        endcap += pagoda_nozzle
+#
+#        #now create another pagoda nozzle for the bottom
+#        pagoda_nozzle = pagoda_nozzle\
+#                                .rotate([180,0,0])
+#        endcap += pagoda_nozzle
+#
+#        #NOTE: 2*wall_thickness may be incorrect but passes my tests, 
+#        #      look here for render errors on inlet
+#        arc_angle = sin((self.tube_diameter+self.inlet_thickness+2*self.wall_thickness)/(2*mean))*180/pi
+#        #move into position on self.object
+#        #NOTE: up by 1.5*wall_thickness doesnt make sense to me but passes test, 
+#        #      look here for endcap related errors
+#        endcap = endcap\
+#                    .forward(mean)\
+#                    .rotate(self.angle/2-90)\
+#                    .up(self.height)
+#        endcap_neg = endcap_neg\
+#                    .forward(mean)\
+#                    .rotate(self.angle/2-90)\
+#                    .up(self.height)
+#        self.object += endcap
+#        self.object -= endcap_neg
 
-        # Create the base male and female features
-        male_features = self._create_male_slot_features(slot_radial_extent, slot_circumferential_width, slot_vertical_height, slot_vertical_offset)
-        female_features = self._create_female_slot_features(slot_radial_extent, slot_circumferential_width, slot_vertical_height, slot_vertical_offset, tolerance)
-
-        # Apply features to the left side (angle 0)
-        if left_slot_type == SLOT_TYPE_MALE:
-            self.object += male_features
-        elif left_slot_type == SLOT_TYPE_FEMALE:
-            self.object -= female_features
-
-        # Apply features to the right side (angle self.angle)
-        if right_slot_type == SLOT_TYPE_MALE:
-            self.object += male_features.rotate([0, 0, self.angle])
-        elif right_slot_type == SLOT_TYPE_FEMALE:
-            self.object -= female_features.rotate([0, 0, self.angle])
+        #add the female only interconnect
+        self.is_endcap = True
+        #TODO: interconnect is subtracting the endcap
 
         return self
 
-    # The inlet method is removed as it is replaced by the new slotting mechanism.
-    # def inlet(self):
-    #     pass
 
     def build(self):
         return self.object
 
+# TODO: rename nozzle_wall_thickness to a more intuitive spacing name
 def spray_rig(
     initial_radius,
     final_radius,
@@ -456,10 +681,12 @@ def spray_rig(
     """
     #TODO: rewrite the above param descriptions
     # Nonesense assertions:
-    assert initial_radius < final_radius, \
-        "ERROR: invalid nozzle and tube diameter, did you enter the radius measurements backwards?"
-    assert nozzle_diameter < tube_diameter, \
-        "ERROR: nozzles must be smaller than the tubing!"
+    assert (
+        initial_radius < final_radius
+    ), "ERROR: invalid nozzle and tube diameter, did you enter the radius measurements backwards?"
+    assert (
+        nozzle_diameter < tube_diameter
+    ), "ERROR: nozzles must be smaller than the tubing!"
 
     #Calculate the size of each segment's arclength and number of segments
     final_circumference = 2 * pi * final_radius
@@ -494,48 +721,93 @@ def spray_rig(
     print("final_max_segment_size: ", max_segment_size)
     print("final_num_segments: ", num_segments)
 
+    #TODO: builder object should be inherited for building state then 
+    #      returning a seperate constructed class that builds the object.
+    #TODO: builder object should hide much more of the configuration. too many methods all at once
+    #TODO: was additive in shell_angle and:
+    #.ang(shell_angle)\
+    #.second_ang(angle)\
+    #TODO: TEST
+    #Spray_Rig = SprayRig()\
+    #                    .rad_maj(final_radius)\
+    #                    .rad_min(initial_radius)\
+    #                    .ang(angle)\
+    #                    .hght(rig_depth+2*wall_thickness)\
+    #                    .second_rad_maj(final_radius-wall_thickness)\
+    #                    .second_rad_min(initial_radius+wall_thickness)\
+    #                    .second_ang(shell_angle)\
+    #                    .second_hght(rig_depth)\
+    #                    .nozzle_rad(nozzle_diameter/2)\
+    #                    .nozzle_hght(wall_thickness)\
+    #                    .nozzle_wall_thick(nozzle_wall_thickness)\
+    #                    .wall_thick(wall_thickness)\
+    #                    .lid_thick(lid_thickness)\
+    #                    .lid_len(lid_length)\
+    #                    .tube_diam(tube_diameter)\
+    #                    .inlet_thick(inlet_thickness)\
+    #                    .center(True)\
+    #                    .circle_arc_shell()\
+    #                    .nozzle_array()\
+    #                    .add_lip()\
+    #                    .middle()\
+    #                    .build()
+    #                    #.endcap()\
+    #                    #.inlet()\
+    #                    #TODO: consolidate endcap and inlet nozzle parameterization
+    #                    #.add_fasteners()\
+    #                    #.middle()\
+    #                    #TODO: nozzle_array shouldnt have to go first, also is not rendering correctly
 
-    # Helper function to configure a base SprayRig segment
-    def _configure_base_spray_rig(initial_radius, final_radius, angle, rig_depth, wall_thickness, shell_angle, nozzle_diameter, nozzle_wall_thickness, lid_thickness, lid_length, tube_diameter, inlet_thickness):
-        return SprayRig() \
-            .rad_maj(final_radius) \
-            .rad_min(initial_radius) \
-            .ang(angle) \
-            .hght(rig_depth + 2 * wall_thickness) \
-            .second_rad_maj(final_radius - wall_thickness) \
-            .second_rad_min(initial_radius + wall_thickness) \
-            .second_ang(shell_angle) \
-            .second_hght(rig_depth) \
-            .nozzle_rad(nozzle_diameter / 2) \
-            .nozzle_hght(wall_thickness) \
-            .nozzle_wall_thick(nozzle_wall_thickness) \
-            .wall_thick(wall_thickness) \
-            .lid_thick(lid_thickness) \
-            .lid_len(lid_length) \
-            .tube_diam(tube_diameter) \
-            .inlet_thick(inlet_thickness) \
-            .center(True) \
-            .circle_arc_shell() \
-            .nozzle_array() \
-            .add_lip() # nozzle_height is typically wall_thickness
+    #                    #TODO: nozzle_array takes a long time to process, only run in production render this has been tested
 
-    # Generate Middle Segment
-    middle_segment_rig = _configure_base_spray_rig(initial_radius, final_radius, angle, rig_depth, wall_thickness, shell_angle, nozzle_diameter, nozzle_wall_thickness, lid_thickness, lid_length, tube_diameter, inlet_thickness)
-    middle_segment_rig.add_slot_connections(SLOT_TYPE_MALE, SLOT_TYPE_FEMALE) # Middle segment: male on one side, female on other
+    #                    #.circle_arc_segment()\
+    #                    #.middle()\
+    #                    #.inlet()\
+    ##TODO: rotate into position
+    #Spray_Rig = Spray_Rig.rotate([90,0,0])
+    ##print("rendering.. " + str(index))
+    #filename = "x" + str(num_segments) + "_" + "Spray_Rig_Segments" #+ str(index + 1)
+    #scad_render_to_file(Spray_Rig, filename + ".scad")
+    #os.system("openscad -o " + filename + ".stl " + filename + ".scad &")
 
-    middle_segment_object = middle_segment_rig.build()
-    middle_segment_object = middle_segment_object.rotate([90, 0, 0]) # Rotate for rendering orientation
-    scad_render_to_file(middle_segment_object, "Spray_Rig_Segment_Middle_Slotted.scad") # Create the SCAD file
-    os.system("openscad -o Spray_Rig_Segment_Middle_Slotted.stl Spray_Rig_Segment_Middle_Slotted.scad") # Render to STL
+    #TODO: inlet is just middle
+    for enum in ["middle",  "endcap"]:
+        #Configure
+        Spray_Rig = SprayRig()\
+                            .rad_maj(final_radius)\
+                            .rad_min(initial_radius)\
+                            .ang(angle)\
+                            .hght(rig_depth+2*wall_thickness)\
+                            .second_rad_maj(final_radius-wall_thickness)\
+                            .second_rad_min(initial_radius+wall_thickness)\
+                            .second_ang(angle)\
+                            .second_hght(rig_depth)\
+                            .nozzle_rad(nozzle_diameter/2)\
+                            .nozzle_hght(wall_thickness)\
+                            .nozzle_wall_thick(nozzle_wall_thickness)\
+                            .wall_thick(wall_thickness)\
+                            .lid_thick(lid_thickness)\
+                            .lid_len(lid_length)\
+                            .tube_diam(tube_diameter)\
+                            .inlet_thick(inlet_thickness)\
+                            .center(True)\
+                            .circle_arc_shell()\
+                            .add_lip()
+#                            .nozzle_array()
+        #Specify
+        cur = getattr(Spray_Rig, enum)()
+        Spray_Rig = cur.build()
+        Spray_Rig = Spray_Rig.rotate([90,0,0])
+        #Render
+        filename = None
+        if enum == "middle":
+            filename = "x" + str(num_segments-1) + "_" + "Spray_Rig_Segments" + "_" + enum
+        else:
+            filename = "Spray_Rig_Segment" + "_" + enum
 
-    # Generate Endcap Segment
-    endcap_segment_rig = _configure_base_spray_rig(initial_radius, final_radius, angle, rig_depth, wall_thickness, shell_angle, nozzle_diameter, nozzle_wall_thickness, lid_thickness, lid_length, tube_diameter, inlet_thickness)
-    endcap_segment_rig.add_slot_connections(SLOT_TYPE_MALE, SLOT_TYPE_NONE) # Endcap segment: male on one side, no slot on other
-
-    endcap_segment_object = endcap_segment_rig.build()
-    endcap_segment_object = endcap_segment_object.rotate([90, 0, 0]) # Rotate for rendering orientation
-    scad_render_to_file(endcap_segment_object, "Spray_Rig_Segment_Endcap_Slotted.scad") # Create the SCAD file
-    os.system("openscad -o Spray_Rig_Segment_Endcap_Slotted.stl Spray_Rig_Segment_Endcap_Slotted.scad") # Render to STL
+        #filename = "x" + str(num_segments) + "_" + "Spray_Rig_Segments" + "_" + enum
+        scad_render_to_file(Spray_Rig, filename + ".scad")
+        os.system("openscad -o " + filename + ".stl " + filename + ".scad &")
 
 if __name__ == "__main__":
     config = toml.load("configuration.toml")
