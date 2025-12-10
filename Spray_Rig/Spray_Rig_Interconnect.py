@@ -697,100 +697,33 @@ def spray_rig(
         array_spacing:
             the spacing between nozzle array rings for mechanical stability.
     """
-    #TODO: rewrite the above param descriptions
-    # Nonesense assertions:
     assert (
         initial_radius < final_radius
     ), "ERROR: invalid nozzle and tube diameter, did you enter the radius measurements backwards?"
     assert (
         nozzle_diameter < tube_diameter
     ), "ERROR: nozzles must be smaller than the tubing!"
-
-    #Calculate the size of each segment's arclength and number of segments
     final_circumference = 2 * pi * final_radius
     num_segments = final_circumference / max_segment_size
     remainder = num_segments % 1
     print("num_segments: ", num_segments)
     print("max_segment_size: ", max_segment_size)
     print("remainder: ", remainder)
-    #find all divisors that result in an integer for final_circumference
     divisors = []
     for i in range(1, floor(final_circumference)):
         divisors.append(final_circumference / i)
     print("divisors: ", divisors)
-    #remave any divisors greater than the max_segment_size
     divisors = [x for x in divisors if x < max_segment_size]
-    #find the closest divisor to max_segment_size
     closest_divisor = min(divisors, key=lambda x: abs(x - max_segment_size))
     print("closest_divisor: ", closest_divisor)
-
     num_segments = final_circumference / closest_divisor
     max_segment_size = closest_divisor
-    #find the angle for the arc length given the now calculated max_segment_size
     angle = degrees(max_segment_size/final_radius)
-    #the angle for the arc that has wall_thickness added to it for the rig
-    #NOTE: this isnt perfect but neither is anything truly beautiful
-    #TODO: ensure this shouldnt be subtractive (is initial and subtracted from final)
-    #TODO: swap shell and angle positioning and make subtractive, this doesnt fit a circle due to wall_thickness*2*num_segments overlap
-    #shell_angle=degrees((max_segment_size+2*wall_thickness)/final_radius)
     shell_angle=degrees((max_segment_size-2*wall_thickness)/final_radius)
-
     print("final_circumference: ", final_circumference)
     print("final_max_segment_size: ", max_segment_size)
     print("final_num_segments: ", num_segments)
-
-    #TODO: builder object should be inherited for building state then 
-    #      returning a seperate constructed class that builds the object.
-    #TODO: builder object should hide much more of the configuration. too many methods all at once
-    #TODO: was additive in shell_angle and:
-    #.ang(shell_angle)\
-    #.second_ang(angle)\
-    #TODO: TEST
-    #Spray_Rig = SprayRig()\
-    #                    .rad_maj(final_radius)\
-    #                    .rad_min(initial_radius)\
-    #                    .ang(angle)\
-    #                    .hght(rig_depth+2*wall_thickness)\
-    #                    .second_rad_maj(final_radius-wall_thickness)\
-    #                    .second_rad_min(initial_radius+wall_thickness)\
-    #                    .second_ang(shell_angle)\
-    #                    .second_hght(rig_depth)\
-    #                    .nozzle_rad(nozzle_diameter/2)\
-    #                    .nozzle_hght(wall_thickness)\
-    #                    .nozzle_wall_thick(nozzle_wall_thickness)\
-    #                    .wall_thick(wall_thickness)\
-    #                    .lid_thick(lid_thickness)\
-    #                    .lid_len(lid_length)\
-    #                    .tube_diam(tube_diameter)\
-    #                    .inlet_thick(inlet_thickness)\
-    #                    .center(True)\
-    #                    .circle_arc_shell()\
-    #                    .nozzle_array()\
-    #                    .add_lip()\
-    #                    .middle()\
-    #                    .build()
-    #                    #.endcap()\
-    #                    #.inlet()\
-    #                    #TODO: consolidate endcap and inlet nozzle parameterization
-    #                    #.add_fasteners()\
-    #                    #.middle()\
-    #                    #TODO: nozzle_array shouldnt have to go first, also is not rendering correctly
-
-    #                    #TODO: nozzle_array takes a long time to process, only run in production render this has been tested
-
-    #                    #.circle_arc_segment()\
-    #                    #.middle()\
-    #                    #.inlet()\
-    ##TODO: rotate into position
-    #Spray_Rig = Spray_Rig.rotate([90,0,0])
-    ##print("rendering.. " + str(index))
-    #filename = "x" + str(num_segments) + "_" + "Spray_Rig_Segments" #+ str(index + 1)
-    #scad_render_to_file(Spray_Rig, filename + ".scad")
-    #os.system("openscad -o " + filename + ".stl " + filename + ".scad &")
-
-    #TODO: inlet is just middle
     for enum in ["middle",  "endcap"]:
-        #Configure
         Spray_Rig = SprayRig()\
                             .rad_maj(final_radius)\
                             .rad_min(initial_radius)\
@@ -811,29 +744,23 @@ def spray_rig(
                             .center(True)\
                             .circle_arc_shell()\
                             .add_interconnect()\
-                            .add_lip()
-#                            .nozzle_array()
-        #Specify
+                            .add_lip()\
+                            .nozzle_array()
         cur = getattr(Spray_Rig, enum)()
         if enum == "endcap":
             Spray_Rig.is_endcap = True
             Spray_Rig.add_pagoda()
         else:
             Spray_Rig.is_endcap = False
-
         Spray_Rig = cur.build()
         Spray_Rig = Spray_Rig.rotate([90,0,0])
-        #Render
         filename = None
         if enum == "middle":
             filename = "x" + str(num_segments-1) + "_" + "Spray_Rig_Segments" + "_" + enum
         else:
             filename = "Spray_Rig_Segment" + "_" + enum
-
-        #filename = "x" + str(num_segments) + "_" + "Spray_Rig_Segments" + "_" + enum
         scad_render_to_file(Spray_Rig, filename + ".scad")
         os.system("openscad -o " + filename + ".stl " + filename + ".scad &")
-
 if __name__ == "__main__":
     config = toml.load("configuration.toml")
     spray_rig(**config)
