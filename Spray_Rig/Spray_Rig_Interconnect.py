@@ -774,8 +774,8 @@ def spray_rig(
                             .center(True)\
                             .circle_arc_shell()\
                             .add_interconnect()\
-                            .add_lip()
-#                            .nozzle_array()
+                            .add_lip()\
+                            .nozzle_array()
         #Specify
         cur = getattr(Spray_Rig, enum)()
         Spray_Rig = cur.build()
