@@ -33,8 +33,8 @@ lid_length = 35#the length that the SprayRig will hang over the bucket lip
 
 #INTERCONNECT PARAMETERS#
 # flexible tube inteconnect diameter between nozzle arrays
-#tube_diameter = 7.6
-tube_diameter = 7.4
+#tube_diameter = 7.4#PREV VALUE (small vinyle tube)
+tube_diameter = 12
 # thickness of the expanding cone to grip the tube (diameter wise, this is the total expected stretch/displacement of the tube from its tube_diameter)
 #inlet_thickness = 1.3 #INITAL VALUE# was 1.8
 inlet_thickness = 1.6
