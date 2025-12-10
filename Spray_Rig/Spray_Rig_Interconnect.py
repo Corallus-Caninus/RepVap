@@ -653,8 +653,8 @@ class SprayRig(BuildSprayRig, CirclePartitions):
             print("adding inlet")#TODO: test
 #            self.object += interconnect.rotate(-self.angle/2-2*arc_angle/2).rotate([180, 0, 0])#TODO: test
 #            self.object -= interconnect_neg.rotate(-self.angle/2-2*arc_angle/2).rotate([180, 0, 0])#TODO: test
-            self.object += interconnect.rotate([180, 0, 0]).up(1.5*self.wall_thickness + self.tube_diameter/8)
-            self.object -= interconnect_neg.rotate([180, 0, 0]).up(1.5*self.wall_thickness + self.tube_diameter/8)
+            self.object += interconnect.rotate([180, 0, 0]).up(1.5*self.wall_thickness )# + self.tube_diameter/4)
+            self.object -= interconnect_neg.rotate([180, 0, 0]).up(1.5*self.wall_thickness )# + self.tube_diameter/4)
 
         return self
 
@@ -744,8 +744,8 @@ def spray_rig(
                             .center(True)\
                             .circle_arc_shell()\
                             .add_interconnect()\
-                            .add_lip()\
-                            .nozzle_array()
+                            .add_lip()
+#                            .nozzle_array()
         cur = getattr(Spray_Rig, enum)()
         if enum == "endcap":
             Spray_Rig.is_endcap = True
