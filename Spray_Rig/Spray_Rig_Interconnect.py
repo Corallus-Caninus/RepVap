@@ -557,7 +557,7 @@ class SprayRig(BuildSprayRig, CirclePartitions):
     '''
     def endcap(self):
         #TODO: extend the middle inside segment
-        mean = (self.radius_major + self.radius_minor)/2
+#        mean = (self.radius_major + self.radius_minor)/2
         #create the cylinder
         #endcap = cylinder(d=self.tube_diameter+self.wall_thickness,\
         #                  h=self.height+self.wall_thickness,\
@@ -620,6 +620,43 @@ class SprayRig(BuildSprayRig, CirclePartitions):
 
         return self
 
+    def add_pagoda(self):
+        mean = (self.radius_major + self.radius_minor)/2
+        interconnect = cylinder(r=self.tube_diameter/2, h=self.wall_thickness+self.tube_diameter/2, center=True, _fn=100)
+        interconnect_neg = cylinder(r=self.tube_diameter/2-self.inlet_thickness, h=2*self.wall_thickness+self.tube_diameter/2, center=True, _fn=100)
+
+        pagoda_nozzle = cylinder(d1=self.tube_diameter+self.inlet_thickness, \
+                                    d2=self.tube_diameter-self.inlet_thickness, \
+                                    h=self.tube_diameter, _fn=500, center=True)
+        pagoda_nozzle_neg = cylinder(r=self.tube_diameter/2-self.inlet_thickness, \
+                                     h=self.tube_diameter, _fn=500, center=True)
+
+        pagoda_nozzle -= pagoda_nozzle_neg
+        pagoda_nozzle = pagoda_nozzle\
+                                .up(self.tube_diameter/2 + self.tube_diameter/4 + self.wall_thickness/2)
+        interconnect = interconnect + pagoda_nozzle
+
+
+        interconnect = interconnect.translate([mean, 0, 0])
+        interconnect_neg = interconnect_neg.translate([mean, 0, 0])
+        interconnect = interconnect.up(self.tube_diameter/8)
+        arc_angle = -sin((self.tube_diameter+2*self.wall_thickness)/(2*mean))*180/pi
+        interconnect = interconnect.rotate([0,0,-self.angle/2])
+        interconnect_neg = interconnect_neg.rotate([0,0,-self.angle/2])
+#TODO: test
+#        interconnect = interconnect.rotate(arc_angle/2)#TODO: test
+#        interconnect_neg = interconnect_neg.rotate(arc_angle/2)#TODO: test
+#TODO: test
+        interconnect_neg = interconnect_neg.up(self.tube_diameter/8)#TODO: test
+#TODO: test
+        if  self.is_endcap:#TODO: test
+            print("adding inlet")#TODO: test
+#            self.object += interconnect.rotate(-self.angle/2-2*arc_angle/2).rotate([180, 0, 0])#TODO: test
+#            self.object -= interconnect_neg.rotate(-self.angle/2-2*arc_angle/2).rotate([180, 0, 0])#TODO: test
+            self.object += interconnect.rotate([180, 0, 0]).up(1.5*self.wall_thickness + self.tube_diameter/8)
+            self.object -= interconnect_neg.rotate([180, 0, 0]).up(1.5*self.wall_thickness + self.tube_diameter/8)
+
+        return self
 
     def build(self):
         return self.object
@@ -774,10 +811,16 @@ def spray_rig(
                             .center(True)\
                             .circle_arc_shell()\
                             .add_interconnect()\
-                            .add_lip()\
-                            .nozzle_array()
+                            .add_lip()
+#                            .nozzle_array()
         #Specify
         cur = getattr(Spray_Rig, enum)()
+        if enum == "endcap":
+            Spray_Rig.is_endcap = True
+            Spray_Rig.add_pagoda()
+        else:
+            Spray_Rig.is_endcap = False
+
         Spray_Rig = cur.build()
         Spray_Rig = Spray_Rig.rotate([90,0,0])
         #Render
