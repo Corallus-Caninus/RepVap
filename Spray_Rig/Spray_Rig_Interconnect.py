@@ -736,9 +736,9 @@ def spray_rig(
                             .inlet_thick(inlet_thickness)\
                             .center(True)\
                             .circle_arc_shell()\
-                            .add_interconnect()
-#                            .add_lip()\
-#                            .nozzle_array()
+                            .add_interconnect()\
+                            .add_lip()\
+                            .nozzle_array()
         cur = getattr(Spray_Rig, enum)()
         if enum == "endcap":
             Spray_Rig.is_endcap = True
