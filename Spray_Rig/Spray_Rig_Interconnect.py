@@ -160,13 +160,13 @@ class CirclePartitions(BuildCirclePartitions):
         female_interface = rotate_extrude(interface_angle, _fn=500)(female_interface)
         female_edge = square([self.wall_thickness, self.height ])
         interface_angle = degrees(atan(self.height/self.radius_minor))
-        female_edge = right(self.radius_minor + 2*self.wall_thickness)(female_edge)
+        female_edge = right(self.radius_minor - 1.5*self.wall_thickness )(female_edge)
         female_edge = rotate_extrude(interface_angle, _fn=500)(female_edge)
         female_edge = female_edge.down(self.height/2)
 #        female_top = female_interface.up(self.height/2 - self.wall_thickness/2)
         female_top = female_interface.up(self.height/2 - self.wall_thickness/2)
         female_bottom = female_interface.up(-self.height/2 )
-        female_interface = female_top + female_bottom+ female_edge
+        female_interface = female_top +  female_bottom + female_edge
         female_interface = female_interface.up((self.height ))
         female_interface = female_interface.right(self.radius_minor)
  
@@ -179,7 +179,7 @@ class CirclePartitions(BuildCirclePartitions):
         male_interface = rotate_extrude(interface_angle, _fn=500)(male_interface)
         male_edge = square([self.wall_thickness/2, self.height])
         interface_angle = degrees(atan(self.height/self.radius_minor))
-        male_edge = right(self.radius_minor + 2*self.wall_thickness)(male_edge)
+        male_edge = right(self.radius_minor - 1.5*self.wall_thickness  )(male_edge)
         male_edge = rotate_extrude(interface_angle, _fn=500)(male_edge)
         male_edge = male_edge.down(self.height/2)
 #        male_top = male_interface.up(self.height/2 - self.wall_thickness/2)
@@ -643,18 +643,11 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         arc_angle = -sin((self.tube_diameter+2*self.wall_thickness)/(2*mean))*180/pi
         interconnect = interconnect.rotate([0,0,-self.angle/2])
         interconnect_neg = interconnect_neg.rotate([0,0,-self.angle/2])
-#TODO: test
-#        interconnect = interconnect.rotate(arc_angle/2)#TODO: test
-#        interconnect_neg = interconnect_neg.rotate(arc_angle/2)#TODO: test
-#TODO: test
-        interconnect_neg = interconnect_neg.up(self.tube_diameter/8)#TODO: test
-#TODO: test
-        if  self.is_endcap:#TODO: test
-            print("adding inlet")#TODO: test
-#            self.object += interconnect.rotate(-self.angle/2-2*arc_angle/2).rotate([180, 0, 0])#TODO: test
-#            self.object -= interconnect_neg.rotate(-self.angle/2-2*arc_angle/2).rotate([180, 0, 0])#TODO: test
-            self.object += interconnect.rotate([180, 0, 0]).up(1.5*self.wall_thickness )# + self.tube_diameter/4)
-            self.object -= interconnect_neg.rotate([180, 0, 0]).up(1.5*self.wall_thickness )# + self.tube_diameter/4)
+        interconnect_neg = interconnect_neg.up(self.tube_diameter/8)
+        if  self.is_endcap:
+            print("adding inlet")
+            self.object += interconnect.rotate([180, 0, 0]).up(1.5*self.wall_thickness )
+            self.object -= interconnect_neg.rotate([180, 0, 0]).up(1.5*self.wall_thickness )
 
         return self
 
@@ -743,8 +736,8 @@ def spray_rig(
                             .inlet_thick(inlet_thickness)\
                             .center(True)\
                             .circle_arc_shell()\
-                            .add_interconnect()\
-                            .add_lip()
+                            .add_interconnect()
+#                            .add_lip()\
 #                            .nozzle_array()
         cur = getattr(Spray_Rig, enum)()
         if enum == "endcap":
