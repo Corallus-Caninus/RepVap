@@ -1,0 +1,199 @@
+from solid2 import *
+from shapes import CirclePartition
+from fasteners import Fastener
+
+class SprayRig:
+    def __init__(self):
+        self._object = None
+        self.nozzle_radius = 0
+        self.nozzle_height = 0
+        self.nozzle_wall_thickness = 0
+        self.wall_thickness = 0
+        self.lid_thickness = 0
+        self.tube_diameter = 0
+        self.inlet_thickness = 0
+        self.lid_length = 0
+
+    def nozzle_rad(self, nozzle_radius):
+        self.nozzle_radius = nozzle_radius
+        return self
+
+    def nozzle_hght(self, nozzle_height):
+        self.nozzle_height = nozzle_height
+        return self
+
+    def nozzle_wall_thick(self, nozzle_wall_thickness):
+        self.nozzle_wall_thickness = nozzle_wall_thickness
+        return self
+
+    def wall_thick(self, wall_thickness):
+        self.wall_thickness = wall_thickness
+        return self
+
+    def lid_thick(self, lid_thickness):
+        self.lid_thickness = lid_thickness
+        return self
+
+    def tube_diam(self, tube_diameter):
+        self.tube_diameter = tube_diameter
+        return self
+
+    def inlet_thick(self, inlet_thickness):
+        self.inlet_thickness = inlet_thickness
+        return self
+
+    def lid_len(self, lid_length):
+        self.lid_length = lid_length
+        return self
+
+    def nozzle_array(self):
+        nozzle_spacing = 2*self.nozzle_radius + self.nozzle_wall_thickness
+        nozzle = cylinder(r=self.nozzle_radius, h=self.nozzle_height, _fn=10, center=True).up(self.nozzle_height/2)
+        total_track = floor((self.radius_major-self.radius_minor)/nozzle_spacing)
+        if self.lid_length is not None and self.lid_thickness is not None:
+            total_track = floor((self.radius_major-self.radius_minor-2*self.lid_thickness)/nozzle_spacing)
+        track = self.radius_minor + self.wall_thickness
+        i = 0
+        while i < total_track:
+            cur_nozzle = nozzle.forward(track)
+            track_circumference = 2*pi*track*(self.angle/360)
+            nozzle_spacing_circumference = track_circumference/2*nozzle_spacing
+            angle_iter = nozzle_spacing_circumference/track
+            cur_angle = 2*angle_iter
+            while cur_angle < self.angle-angle_iter:
+                self._object = self._object - cur_nozzle.rotate([0, 0, 270 + cur_angle])
+                cur_angle += angle_iter
+            i += 1
+            track += nozzle_spacing
+        return self
+
+    def add_lip(self):
+        outer_height = self.lid_length
+        outer_lip = square([self.lid_thickness, outer_height], center=True).right(self.radius_major+1.5*self.lid_thickness)
+        outer_lip = rotate_extrude(angle=self.angle, _fn=500)(outer_lip)
+        inner_lip = outer_lip.left(2*self.lid_thickness)
+        inner_lip = rotate_extrude(angle=self.angle, _fn=500)(inner_lip)
+        cover = square([3*self.lid_thickness,self.height], center=True).right(self.radius_major+self.lid_thickness/2)
+        cover = rotate_extrude(angle=self.angle, _fn=500)(cover).up(outer_height/2+self.height/2)
+        lip = outer_lip + inner_lip + cover
+        lip = lip.down(outer_height/2-self.height/2)
+        self._object += lip
+        return self
+
+    def add_fasteners(self):
+        far_fastener = Fastener().hght(2*self.wall_thickness).wdth(self.wall_thickness/2).lngth(self.wall_thickness/2).hinge_hght(self.wall_thickness/2).hinge_wdth(self.wall_thickness/2).build().rotate(180).rotate([0,-90, 0]).forward(self.radius_major).rotate([0, 0, self.angle-90]).up(1.5*self.height)
+        near_fastener = Fastener().hght(2*self.wall_thickness).wdth(self.wall_thickness/2).lngth(self.wall_thickness/2).hinge_hght(self.wall_thickness/2).hinge_wdth(self.wall_thickness/2).build().rotate(180).rotate([0, -90, 0]).forward(self.radius_minor+self.wall_thickness/2).rotate([0, 0, self.angle-90]).up(1.5*self.height)
+        bottom_near_fastener = Fastener().hght(2*self.wall_thickness).wdth(self.wall_thickness/2).lngth(self.wall_thickness/2).hinge_hght(self.wall_thickness/2).hinge_wdth(self.wall_thickness/2).build().rotate(180).rotate([180, 90, 0]).forward(self.radius_minor).rotate([0, 0, self.angle-90]).up(0.5*self.height)
+        bottom_far_fastener = Fastener().hght(2*self.wall_thickness).wdth(self.wall_thickness/2).lngth(self.wall_thickness/2).hinge_hght(self.wall_thickness/2).hinge_wdth(self.wall_thickness/2).build().rotate(180).rotate([180, 90, 0]).forward(self.radius_major-self.wall_thickness/2).rotate([0, 0, self.angle-90]).up(0.5*self.height)
+        far_fastener_neg = Fastener().hght(2*self.wall_thickness).wdth(self.wall_thickness/2).lngth(self.wall_thickness).hinge_hght(self.wall_thickness).hinge_wdth(self.wall_thickness).build().rotate(180).rotate([0,-90, 0]).forward(self.radius_major).rotate([0, 0, self.angle-90]).up(1.5*self.height)
+        near_fastener_neg = Fastener().hght(2*self.wall_thickness).wdth(self.wall_thickness/2).lngth(self.wall_thickness).hinge_hght(self.wall_thickness).hinge_wdth(self.wall_thickness).build().rotate(180).rotate([0, -90, 0]).forward(self.radius_minor+self.wall_thickness/2).rotate([0, 0, self.angle-90]).up(1.5*self.height)
+        bottom_near_fastener_neg = Fastener().hght(2*self.wall_thickness).wdth(self.wall_thickness/2).lngth(self.wall_thickness).hinge_hght(self.wall_thickness).hinge_wdth(self.wall_thickness).build().rotate(180).rotate([180, 90, 0]).forward(self.radius_minor).rotate([0, 0, self.angle-90]).up(0.5*self.height)
+        bottom_far_fastener_neg = Fastener().hght(2*self.wall_thickness).wdth(self.wall_thickness/2).lngth(self.wall_thickness).hinge_hght(self.wall_thickness).hinge_wdth(self.wall_thickness).build().rotate(180).rotate([180, 90, 0]).forward(self.radius_major-self.wall_thickness/2).rotate([0, 0, self.angle-90]).up(0.5*self.height)
+        self._object += far_fastener
+        self._object += near_fastener
+        self._object += bottom_near_fastener
+        self._object += bottom_far_fastener
+        self._object -= far_fastener_neg.rotate(-self.angle)
+        self._object -= near_fastener_neg.rotate(-self.angle)
+        self._object -= bottom_near_fastener_neg.rotate(-self.angle)
+        self._object -= bottom_far_fastener_neg.rotate(-self.angle)
+        return self
+
+    def __add_interconnect(self):
+        mean = (self.radius_major + self.radius_minor)/2
+        interconnect = cylinder(r=self.tube_diameter/2, h=self.wall_thickness+self.tube_diameter/2, center=True, _fn=100)
+        interconnect_neg = cylinder(r=self.tube_diameter/2-self.inlet_thickness, h=2*self.wall_thickness+self.tube_diameter/2, center=True, _fn=100)
+        pagoda_nozzle = cylinder(d1=self.tube_diameter+self.inlet_thickness, d2=self.tube_diameter-self.inlet_thickness, h=self.tube_diameter, _fn=500, center=True)
+        pagoda_nozzle_neg = cylinder(r=self.tube_diameter/2-self.inlet_thickness, h=self.tube_diameter, _fn=500, center=True)
+        pagoda_nozzle -= pagoda_nozzle_neg
+        pagoda_nozzle = pagoda_nozzle.up(self.tube_diameter/2 + self.tube_diameter/4 + self.wall_thickness/2)
+        interconnect = interconnect + pagoda_nozzle
+        interconnect = interconnect.translate([mean, 0, 0]).up(self.height/2).up(self.height+self.tube_diameter/8)
+        arc_angle = -sin((self.tube_diameter+2*self.wall_thickness)/(2*mean))*180/pi
+        interconnect = interconnect.rotate([0,0,self.angle]).rotate(arc_angle)
+        interconnect_neg = interconnect_neg.rotate([0,0,self.angle]).rotate(arc_angle).up(self.height+self.tube_diameter/8)
+        if not hasattr(self,"is_endcap") or not self.is_endcap:
+            self._object += interconnect
+            self._object -= interconnect_neg
+        if not hasattr(self,"is_inlet") or not self.is_inlet:
+            self._object += interconnect.rotate(-self.angle-2*arc_angle)
+            self._object -= interconnect_neg.rotate(-self.angle-2*arc_angle)
+        return self
+
+    def middle(self):
+        self.is_endcap = False
+        self.is_inlet = False
+        self.__add_interconnect()
+        return self
+
+    def inlet(self):
+        return self.middle()
+
+    def endcap(self):
+        mean = (self.radius_major + self.radius_minor)/2
+        endcap = cylinder(d=self.tube_diameter, h=self.height+self.wall_thickness+self.tube_diameter, _fn=500, center=True)
+        endcap_neg = cylinder(r=self.tube_diameter/2 - self.inlet_thickness, h=self.height+self.wall_thickness+self.tube_diameter, _fn=500, center=True)
+        endcap -= endcap_neg
+        pagoda_nozzle = cylinder(d1=self.tube_diameter+self.inlet_thickness, d2=self.tube_diameter, h=self.tube_diameter, _fn=500, center=True)
+        pagoda_nozzle_neg = cylinder(r=self.tube_diameter/2-self.inlet_thickness, h=self.tube_diameter, _fn=500, center=True)
+        pagoda_nozzle -= pagoda_nozzle_neg
+        pagoda_nozzle = pagoda_nozzle.up(self.wall_thickness + self.height/2 + self.tube_diameter/2)
+        endcap += pagoda_nozzle
+        pagoda_nozzle = pagoda_nozzle.rotate([180,0,0])
+        endcap += pagoda_nozzle
+        arc_angle = sin((self.tube_diameter+self.inlet_thickness+2*self.wall_thickness)/(2*mean))*180/pi
+        endcap = endcap.forward(mean).rotate(self.angle/2-90).up(self.height)
+        endcap_neg = endcap_neg.forward(mean).rotate(self.angle/2-90).up(self.height)
+        self._object += endcap
+        self._object -= endcap_neg
+        self.is_endcap = True
+        self.__add_interconnect()
+        return self
+
+    def build(self):
+        return self._object
+
+def spray_rig(
+    initial_radius,
+    final_radius,
+    nozzle_diameter,
+    nozzle_wall_thickness,
+    lid_thickness,
+    lid_length,
+    tube_diameter,
+    inlet_thickness,
+    wall_thickness,
+    rig_depth,
+    max_segment_size,
+    epsilon,
+):
+    assert (initial_radius < final_radius), "ERROR: invalid nozzle and tube diameter, did you enter the radius measurements backwards?"
+    assert (nozzle_diameter < tube_diameter), "ERROR: nozzles must be smaller than the tubing!"
+    final_circumference = 2 * pi * final_radius
+    num_segments = final_circumference / max_segment_size
+    remainder = num_segments % 1
+    divisors = []
+    for i in range(1, floor(final_circumference)):
+        divisors.append(final_circumference / i)
+    divisors = [x for x in divisors if x < max_segment_size]
+    closest_divisor = min(divisors, key=lambda x: abs(x - max_segment_size))
+    num_segments = final_circumference / closest_divisor
+    max_segment_size = closest_divisor
+    angle = degrees(max_segment_size/final_radius)
+    shell_angle=degrees((max_segment_size-2*wall_thickness)/final_radius)
+    for enum in ["middle",  "endcap"]:
+        Spray_Rig = SprayRig().rad_maj(final_radius).rad_min(initial_radius).ang(angle).hght(rig_depth+2*wall_thickness).second_rad_maj(final_radius-wall_thickness).second_rad_min(initial_radius+wall_thickness).second_ang(shell_angle).second_hght(rig_depth).nozzle_rad(nozzle_diameter/2).nozzle_hght(wall_thickness).nozzle_wall_thick(nozzle_wall_thickness).wall_thick(wall_thickness).lid_thick(lid_thickness).lid_len(lid_length).tube_diam(tube_diameter).inlet_thick(inlet_thickness).circle_arc_shell(final_radius-wall_thickness, initial_radius+wall_thickness, shell_angle, rig_depth).nozzle_array().add_lip()
+        cur = getattr(Spray_Rig, enum)()
+        Spray_Rig = cur.build()
+        Spray_Rig = Spray_Rig.rotate([90,0,0])
+        filename = None
+        if enum == "middle":
+            filename = "x" + str(num_segments-1) + "_" + "Spray_Rig_Segments" + "_" + enum
+        else:
+            filename = "Spray_Rig_Segment" + "_" + enum
+        scad_render_to_file(Spray_Rig, filename + ".scad")
+        os.system("openscad -o " + filename + ".stl " + filename + ".scad &")
+
+if __name__ == "__main__":
+    config = toml.load("configuration.toml")
+    spray_rig(**config)

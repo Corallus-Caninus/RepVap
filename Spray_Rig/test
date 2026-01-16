@@ -1,0 +1,30 @@
+159:           #Female interconnect
+160: #TODO: this is slopy and will artifact when we sweep the angles for larger radii circles
+161:           female_interface = cube([self.radius_major + (2*self.wall_thickness - self.second_height)/2  - self.radius_minor - 2*self.wall_thickness ,self.height,  self.wall_thickness/2 ])
+162: #          female_edge = cube([self.wall_thickness, self.height,self.height ])
+163:           female_edge = rectangle([self.wall_thickness, self.height ])
+164:           female_edge = female_edge.down(self.height/2)
+165:           female_top = female_interface.up(self.height/2 - self.wall_thickness/2)
+166:           female_bottom = female_interface.up(-self.height/2 )
+167:           female_interface = female_top + female_bottom+ female_edge
+168:           female_interface = female_interface.up((self.height ))
+169:           female_interface = female_interface.right(self.radius_minor)
+170: 
+171:           circle_arc_segment = circle_arc_segment- female_interface
+172: 
+173:           # Male interconnect
+174: #TODO: these need to be subtractive since the segments sum to a perfect circle. The interlocking should be subtractive from the segments for this reason
+175: #TODO: the key parameterization is (height-second_height)/4 as the wall thickness for the interconnect.also (radius_major - radius_minor)/4 for the front and back interconnects
+176:           print("BUILDING INTERFACE")
+177:           male_interface = cube([self.radius_major + (2*self.wall_thickness - self.second_height)/2  - self.radius_minor - 2*self.wall_thickness ,self.height,  self.wall_thickness/2 ])
+178:           male_edge = cube([self.wall_thickness, self.height,self.height ])
+179:           male_edge = male_edge.down(self.height/2)
+180:           male_top = male_interface.up(self.height/2 - self.wall_thickness/2)
+181:           male_bottom = male_interface.up(-self.height/2 )
+182:           male_interface = male_top + male_bottom+ male_edge
+183:           male_interface = male_interface.up((self.height ))
+184:           male_interface = male_interface.right(self.radius_minor)
+185: #          male_interface = male_interface.forward(self.height/2)
+186:           male_interface = rotate(self.angle)(male_interface)
+187: 
+188:           circle_arc_segment = circle_arc_segment+ male_interface
