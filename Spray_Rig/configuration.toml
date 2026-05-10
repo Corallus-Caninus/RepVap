@@ -26,6 +26,7 @@ nozzle_diameter = 0.5
 #production value:
 #nozzle_wall_thickness =  3 #INITIAL VALUE
 nozzle_wall_thickness = 3.25
+nozzle_group_offset = 10
 
 #LID INTERFACE PARAMETERS#
 #lid_thickness = 2 #the bucket lip thickness (thickness of bucket wall)

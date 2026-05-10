@@ -6,6 +6,8 @@
 # TODO: refactor so some features can be an inheritance expansion library for solidpython such as Fastener which I will be using alot. import here so updates from other projects get propagated to this project
 from math import *
 import os
+import subprocess
+import concurrent.futures
 from solid2 import *
 import toml
 epsilon = 0.0001
@@ -109,10 +111,10 @@ class CirclePartitions(BuildCirclePartitions):
         #TODO: this is a bad solution
         if is_second:
             rectangle = square([self.second_radius_major, self.second_height])
-            circle_segment = rotate_extrude(angle=self.second_angle, _fn=500)(rectangle)
+            circle_segment = rotate_extrude(angle=self.second_angle, _fn=0)(rectangle)
         else:
             rectangle = square([self.radius_major, self.height])
-            circle_segment = rotate_extrude(angle=self.angle, _fn=500)(rectangle)
+            circle_segment = rotate_extrude(angle=self.angle, _fn=0)(rectangle)
         #sweep the rectangle with rotation extrude
         self.object = circle_segment
         #TODO: this should be self but needs to be reworked in calling methods (circle_arc_segment)
@@ -124,12 +126,12 @@ class CirclePartitions(BuildCirclePartitions):
         if is_second:
             circle_segment = self.circle_segment(is_second=True)
             inner_rectangle = square([self.second_radius_minor, self.second_height])
-            inner_circle = rotate_extrude(angle=2*self.second_angle, _fn=500)(inner_rectangle)
+            inner_circle = rotate_extrude(angle=2*self.second_angle, _fn=0)(inner_rectangle)
             circle_arc_segment = circle_segment - inner_circle
         else:
             circle_segment = self.circle_segment()
             inner_rectangle = square([self.radius_minor, self.height])
-            inner_circle = rotate_extrude(angle=2*self.angle, _fn=500)(inner_rectangle)
+            inner_circle = rotate_extrude(angle=2*self.angle, _fn=0)(inner_rectangle)
             circle_arc_segment = circle_segment - inner_circle
         if self.Center and is_second:
             circle_arc_segment = circle_arc_segment.up(self.second_height/2)
@@ -145,15 +147,15 @@ class CirclePartitions(BuildCirclePartitions):
         interface_angle = degrees(atan(self.height/self.radius_minor))
 #        female_interface = square([self.radius_major + (2*self.wall_thickness - self.second_height)/2  - self.radius_minor - 2*self.wall_thickness ,  self.wall_thickness/2 ])
 #NOTE: wall thickness on the radius is overkill for a epsilonish artifact
-        female_interface = square([self.radius_major  - self.radius_minor ,  self.wall_thickness/2 ])
-        female_interface = rotate_extrude(interface_angle, _fn=500)(female_interface)
+        female_interface = square([self.radius_major  - self.radius_minor - self.nozzle_group_offset ,  self.wall_thickness/2 ])
+        female_interface = rotate_extrude(interface_angle, _fn=0)(female_interface)
         female_edge = square([self.wall_thickness, self.height + self.wall_thickness/2   ])
         interface_angle = degrees(atan(self.height/self.radius_minor))
-        female_edge = right(self.radius_minor - 1.5*self.wall_thickness )(female_edge)
-        female_edge = rotate_extrude(interface_angle, _fn=500)(female_edge)
-#        female_edge = female_edge.down(self.height/2 + self.wall_thickness/4)
+        female_edge = rotate_extrude(interface_angle, _fn=0)(female_edge)
+        female_edge = female_edge.down(self.height/2 + self.wall_thickness/4)
 ##        female_top = female_interface.up(self.height/2 - self.wall_thickness/2)
         female_top = female_interface.up(self.height/2 - self.wall_thickness/2)
+#        female_top = female_interface.up(self.height/2 )
         female_bottom = female_interface.up(-self.height/2 )
         female_interface = female_top +  female_bottom + female_edge
         female_interface = female_interface.up((self.height ))
@@ -163,12 +165,11 @@ class CirclePartitions(BuildCirclePartitions):
         print("BUILDING INTERFACE")
         interface_angle = degrees(atan(self.height/self.radius_minor))
 #        male_interface = square([self.radius_major + (2*self.wall_thickness - self.second_height)/2  - self.radius_minor - 2*self.wall_thickness ,  self.wall_thickness/2 ])
-        male_interface = square([self.radius_major  - self.radius_minor, self.wall_thickness/2 ])
-        male_interface = rotate_extrude(interface_angle, _fn=500)(male_interface)
+        male_interface = square([self.radius_major  - self.radius_minor - self.nozzle_group_offset, self.wall_thickness/2 ])
+        male_interface = rotate_extrude(interface_angle, _fn=0)(male_interface)
         male_edge = square([self.wall_thickness/2, self.height])
         interface_angle = degrees(atan(self.height/self.radius_minor))
-        male_edge = right(self.radius_minor - 1.5*self.wall_thickness  )(male_edge)
-        male_edge = rotate_extrude(interface_angle, _fn=500)(male_edge)
+        male_edge = rotate_extrude(interface_angle, _fn=0)(male_edge)
         male_edge = male_edge.down(self.height/2)
 #        male_top = male_interface.up(self.height/2 - self.wall_thickness/2)
         male_top = male_interface.up(self.height/2 - self.wall_thickness/2)
@@ -208,6 +209,9 @@ class BuildSprayRig():
     def nozzle_wall_thick(self, nozzle_wall_thickness):
         self.nozzle_wall_thickness = nozzle_wall_thickness
         return self
+    def nozzle_group_off(self, nozzle_group_offset):
+        self.nozzle_group_offset = nozzle_group_offset
+        return self
     def wall_thick(self, wall_thickness):
         self.wall_thickness = wall_thickness
         return self
@@ -228,63 +232,40 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         super().__init__()
     #TODO: extrude 2D for performance instead of iterating rotationally transformed matrix of cylinders
     def nozzle_array(self):
-        #self.object = super().circle_arc_segment().object
-        #now also remove cylinders from the bottom of the circle arc segment
-        #create a cylinder
         print("~GENERATING NOZZLE ARRAY~")
-        #TODO: all self mutations should be in stateful builder otherwise 
-        #      state is scattered
         nozzle_spacing = 2*self.nozzle_radius + self.nozzle_wall_thickness
-        nozzle = cylinder(r=self.nozzle_radius, \
-                          h=self.nozzle_height, _fn=10, center=True)\
-                     .up(self.nozzle_height/2+self.height/2)
-        #generate the nozzle angles
-        #move the cylinder to the origin
-        #create a row of nozzles 
-        #TODO: TEST: was:
-        #total_track = floor((self.radius_major-self.radius_minor)/nozzle_spacing)
-        total_track = floor((self.radius_major-self.radius_minor)/nozzle_spacing)
-        #TODO: test that we dont intersect with the lip
-        #TODO: make conditional builds functional and elegant
+        total_track = floor((self.radius_major-self.radius_minor-self.nozzle_group_offset)/nozzle_spacing)
         if self.lid_length is not None and self.lid_thickness is not None:
-            #TODO: 3*self.lid_thickness and move thickness in.
-#            total_track = floor((self.radius_major-self.radius_minor-2*self.lid_thickness)/nozzle_spacing)#
-            total_track = floor((self.radius_major-self.radius_minor)/nozzle_spacing)#TODO: test this.
+            total_track = floor((self.radius_major-self.radius_minor-self.nozzle_group_offset)/nozzle_spacing)
         print("num tracks: ", total_track)
-        #NOTE: first iteration is skipped 
-        track = self.radius_minor + self.wall_thickness#TODO: TEST: was: 2*nozzle_spacing
+        track = self.radius_minor + self.wall_thickness
         num_nozzles = 0
-        #i=3
-        #TODO: TEST also this seems to be a hack and is expected to not sweep parameters
-        #calculate how many tracks will intersect with the inner_lip which is a distance of 2*self.lid_thickness
-        i=0
-        #i = ceil(self.lid_thickness/nozzle_spacing)
-        #TODO: remove first radius iteration and first angle iteration
+        i = 0
         interface_angle = degrees(atan(self.height/self.radius_minor))
+        pattern = None
         while i < total_track:
             print("i: ", i)
             print("track: ", track)
-            cur_nozzle = nozzle.forward(track)
-            #TODO: algebraic reduction
             track_circumference = 2*pi*track*(self.angle/360)
             nozzle_spacing_circumference = track_circumference/2*nozzle_spacing
             angle_iter = nozzle_spacing_circumference/track
-            #TODO: TEST this line was init 0
-#            cur_angle = 2*angle_iter
             cur_angle = angle_iter
             print("angle_iter: ", angle_iter)
-            #NOTE: we skip the first angle iter and the last for a 
-            #      psuedo wall_thickness and correct later
-            #cur_angle += angle_iter
-            while cur_angle < 2*interface_angle + self.angle-angle_iter:
-                #tap a nozzle into the circle arc segment
-                self.object = self.object - cur_nozzle.rotate([0, 0, 270 + cur_angle])
+            while cur_angle < 2*interface_angle + self.angle - angle_iter:
+                theta = radians(270 + cur_angle)
+                x = -track * sin(theta)
+                y = track * cos(theta)
+                hole = circle(r=self.nozzle_radius, _fn=6).translate([x, y])
+                pattern = hole if pattern is None else pattern + hole
                 cur_angle += angle_iter
                 num_nozzles += 1
-            i +=1
+            i += 1
             track += nozzle_spacing
         print("num_nozzles: ", num_nozzles)
-        #move the circle arc segment to the origin
+        if pattern is not None:
+            nozzle_holes = linear_extrude(height=self.nozzle_height, center=True)(pattern)
+            nozzle_holes = nozzle_holes.up(self.nozzle_height/2 + self.height/2)
+            self.object = self.object - nozzle_holes
         return self
     '''
     add a lip to the SprayRig object to
@@ -304,7 +285,7 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         outer_lip_flat = outer_lip.right(self.radius_major + 2.5*self.lid_thickness)
 #        outer_lip_flat = outer_lip.right(self.radius_major + self.lid_thickness/2)
         #rotate extrude the final radius
-        outer_lip = rotate_extrude(angle=self.angle, _fn=500)(outer_lip_flat)
+        outer_lip = rotate_extrude(angle=self.angle, _fn=0)(outer_lip_flat)
 #        outer_lip = outer_lip.forward(self.lid_thickness)
         #create the inner lip
         #inner_lip = square([self.lid_thickness, self.lid_lengthself.height], center=True)\
@@ -312,12 +293,12 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         #inner_lip = inner_lip.right(self.radius_major-2*self.lid_thickness)
         inner_lip = outer_lip_flat.left(2*self.lid_thickness)
         #rotate extrude the final radius
-        inner_lip = rotate_extrude(angle=self.angle, _fn=500)(inner_lip)
+        inner_lip = rotate_extrude(angle=self.angle, _fn=0)(inner_lip)
 #        inner_lip = inner_lip.forward(self.lid_thickness)
         #now create a swept rectangle to fill the space above the lips
         cover = square([3*self.lid_thickness,self.height], center=True)
         cover = cover.right(self.radius_major + 1.5*self.lid_thickness)
-        cover = rotate_extrude(angle=self.angle, _fn=500)(cover)
+        cover = rotate_extrude(angle=self.angle, _fn=0)(cover)
         cover = cover.up(outer_height/2 + self.height/2)
         lip = outer_lip + inner_lip + cover
         lip = lip.down(outer_height/2-self.height/2)
@@ -475,26 +456,26 @@ class SprayRig(BuildSprayRig, CirclePartitions):
 #        #create the cylinder
 #        #endcap = cylinder(d=self.tube_diameter+self.inlet_thickness,\
 #        #                  h=self.height+self.wall_thickness,\
-#        #                  _fn=500, center=True)
+#        #                  _fn=0, center=True)
 #        #endcap_neg = cylinder(d=self.tube_diameter, \
 #                #                    h=self.height+self.wall_thickness,\
-#                #                    _fn=500, center=True)
+#                #                    _fn=0, center=True)
 #        endcap = cylinder(r=self.tube_diameter/2,\
 #                            h=self.height+self.tube_diameter/2,\
-#                            _fn=500, center=True)
+#                            _fn=0, center=True)
 #        endcap_neg = cylinder(r=self.tube_diameter/2,\
 #                            h=self.height+self.wall_thickness,\
-#                            _fn=500, center=True)
+#                            _fn=0, center=True)
 #        endcap -= endcap_neg
 #
 #        #TODO: this pagoda doesnt taste like snozberries.
 #        #add the pagoda fasteners
 #        pagoda_nozzle = cylinder(d1=self.tube_diameter+self.inlet_thickness, \
 #                                    d2=self.tube_diameter-self.inlet_thickness, \
-#                                    h=self.tube_diameter, _fn=500, center=True)
+#                                    h=self.tube_diameter, _fn=0, center=True)
 #        #pagoda_nozzle_neg = cylinder(d1=self.tube_diameter, \
 #        pagoda_nozzle_neg = cylinder(r=self.tube_diameter/2-self.inlet_thickness, \
-#                                    h=self.tube_diameter, _fn=500, center=True)
+#                                    h=self.tube_diameter, _fn=0, center=True)
 #        pagoda_nozzle -= pagoda_nozzle_neg
 #        pagoda_nozzle = pagoda_nozzle\
 #                .up(self.tube_diameter/2 + self.tube_diameter/4 + self.wall_thickness/2)
@@ -535,18 +516,18 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         #create the cylinder
         #endcap = cylinder(d=self.tube_diameter+self.wall_thickness,\
         #                  h=self.height+self.wall_thickness,\
-        #                  _fn=500, center=True)
+        #                  _fn=0, center=True)
         #endcap_neg = cylinder(d=self.tube_diameter, \
         #                    h=self.height+self.wall_thickness,\
-        #                    _fn=500, center=True)
+        #                    _fn=0, center=True)
         #TODO: ensure nozzles dont hole this and there arent leaks
 #        endcap = cylinder(d=self.tube_diameter,\
 #                          h=self.height+self.wall_thickness+self.tube_diameter,\
-#                          _fn=500, center=True)
+#                          _fn=0, center=True)
 #        #TODO: subtract after adding nozzles
 #        endcap_neg = cylinder(r=self.tube_diameter/2 - self.inlet_thickness, \
 #                            h=self.height+self.wall_thickness+self.tube_diameter,\
-#                            _fn=500, center=True)
+#                            _fn=0, center=True)
 #        endcap -= endcap_neg
 #
 #        #add the pagoda fasteners
@@ -554,12 +535,12 @@ class SprayRig(BuildSprayRig, CirclePartitions):
 #        #      pressure will be lost and wont be detected by the user.
 #        pagoda_nozzle = cylinder(d1=self.tube_diameter+self.inlet_thickness, \
 #                                    d2=self.tube_diameter, \
-#                                    h=self.tube_diameter, _fn=500, center=True)
+#                                    h=self.tube_diameter, _fn=0, center=True)
 #        pagoda_nozzle_neg = cylinder(r=self.tube_diameter/2-self.inlet_thickness, \
-#                                    h=self.tube_diameter, _fn=500, center=True)
+#                                    h=self.tube_diameter, _fn=0, center=True)
 #        #pagoda_nozzle_neg = cylinder(d1=self.tube_diameter, \
 #        #                            d2=self.tube_diameter, \
-#        #                            h=self.tube_diameter, _fn=500, center=True)
+#        #                            h=self.tube_diameter, _fn=0, center=True)
 #        pagoda_nozzle -= pagoda_nozzle_neg
 #
 #        pagoda_nozzle = pagoda_nozzle\
@@ -593,13 +574,13 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         return self
     def add_pagoda(self):
         mean = (self.radius_major + self.radius_minor)/2
-        interconnect = cylinder(r=self.tube_diameter/2, h=self.wall_thickness+self.tube_diameter/2, center=True, _fn=100)
-        interconnect_neg = cylinder(r=self.tube_diameter/2-self.inlet_thickness, h=2*self.wall_thickness+self.tube_diameter/2, center=True, _fn=100)
+        interconnect = cylinder(r=self.tube_diameter/2, h=self.wall_thickness+self.tube_diameter/2, center=True, _fn=0)
+        interconnect_neg = cylinder(r=self.tube_diameter/2-self.inlet_thickness, h=2*self.wall_thickness+self.tube_diameter/2, center=True, _fn=0)
         pagoda_nozzle = cylinder(d1=self.tube_diameter+self.inlet_thickness, \
                                     d2=self.tube_diameter-self.inlet_thickness, \
-                                    h=self.tube_diameter, _fn=500, center=True)
+                                    h=self.tube_diameter, _fn=0, center=True)
         pagoda_nozzle_neg = cylinder(r=self.tube_diameter/2-self.inlet_thickness, \
-                                     h=self.tube_diameter, _fn=500, center=True)
+                                     h=self.tube_diameter, _fn=0, center=True)
         pagoda_nozzle -= pagoda_nozzle_neg
         pagoda_nozzle = pagoda_nozzle\
                                 .up(self.tube_diameter/2 + self.tube_diameter/4 + self.wall_thickness/2)
@@ -618,12 +599,20 @@ class SprayRig(BuildSprayRig, CirclePartitions):
         return self
     def build(self):
         return self.object
+def _render_stl(scad_file, stl_file):
+    cmd = ["openscad", "-q", "--export-format", "binstl", "-o", stl_file, scad_file]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"ERROR rendering {scad_file}: {result.stderr}")
+    else:
+        print(f"Done: {stl_file}")
 # TODO: rename nozzle_wall_thickness to a more intuitive spacing name
 def spray_rig(
     initial_radius,
     final_radius,
     nozzle_diameter,
     nozzle_wall_thickness,
+    nozzle_group_offset,
     lid_thickness,
     lid_length,
     tube_diameter,
@@ -680,19 +669,21 @@ def spray_rig(
     print("final_circumference: ", final_circumference)
     print("final_max_segment_size: ", max_segment_size)
     print("final_num_segments: ", num_segments)
-    for enum in ["middle",  "endcap"]:
+    renders = []
+    for enum in ["middle", "endcap"]:
         Spray_Rig = SprayRig()\
                             .rad_maj(final_radius)\
                             .rad_min(initial_radius)\
                             .ang(angle)\
                             .hght(rig_depth+2*wall_thickness)\
-                            .second_rad_maj(final_radius-wall_thickness)\
+                            .second_rad_maj(final_radius-wall_thickness-nozzle_group_offset)\
                             .second_rad_min(initial_radius+wall_thickness)\
-                            .second_ang(angle)\
+                            .second_ang(angle + 0.01)\
                             .second_hght(rig_depth)\
                             .nozzle_rad(nozzle_diameter/2)\
                             .nozzle_hght(wall_thickness)\
                             .nozzle_wall_thick(nozzle_wall_thickness)\
+                            .nozzle_group_off(nozzle_group_offset)\
                             .wall_thick(wall_thickness)\
                             .lid_thick(lid_thickness)\
                             .lid_len(lid_length)\
@@ -717,7 +708,19 @@ def spray_rig(
         else:
             filename = "Spray_Rig_Segment" + "_" + enum
         scad_render_to_file(Spray_Rig, filename + ".scad")
-        os.system("openscad -o " + filename + ".stl " + filename + ".scad &")
+        renders.append((filename + ".scad", filename + ".stl"))
+    header = "$fa = 1; $fs = 0.5;\n"
+    for scad, _ in renders:
+        with open(scad, "r+") as f:
+            content = f.read()
+            f.seek(0)
+            f.write(header + content)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        futures = [pool.submit(_render_stl, scad, stl) for scad, stl in renders]
+        concurrent.futures.wait(futures)
+        for f in futures:
+            if f.exception():
+                print(f"Render failed: {f.exception()}")
 if __name__ == "__main__":
     config = toml.load("configuration.toml")
     spray_rig(**config)
