@@ -1,0 +1,57 @@
+# all entries are in millimeters #
+# These configuration values are set for a 5 gallon bucket RepVap #
+
+#TODO: test configuration to workaround openscad render times
+#LID PARAMETERS#
+# initial_radius = 94
+#initial_radius = 80#INITIAL VALUE
+#initial_radius = 65 #calculated at 73 for fan -~5mm for lip NOTE: previous production run value
+initial_radius = 70 #calculated at 73 for fan -~5mm for lip
+#final_radius = 100
+#production value:
+#final_radius = 135#PREV VALUE
+#final_radius = 141 # Lowes 5 gallon bucket is 300mm diameter = 150mm rad - 9mm lip to set the hinge to begin on the exact inner edge NOTE: previous production run value
+final_radius = 135 # Lowes 5 gallon bucket is 300mm diameter = 150mm rad - 9mm lip to set the hinge to begin on the exact inner edge
+#the radius from the middle of the cylindrical container to the wall where the spray rig will be mounted.
+#final_radius = 145#PREV VALUE
+#final_radius = 162
+
+#NOZZLE PARAMETERS#
+#nozzle_diameter = 1.25
+#nozzle_diameter = 0.75#INITIAL VALUE
+nozzle_diameter = 0.5
+#NOTE: this is critical to get enough wall spacing for the object. Ensure this value is tuned correctly.
+#raise this value so that the spacing is equal to pressure to prevent premature collaborative intereference of streams
+#nozzle_wall_thickness = 2
+#production value:
+#nozzle_wall_thickness =  3 #INITIAL VALUE
+nozzle_wall_thickness = 3.25
+#nozzle_group_offset = 10 #removed - nozzles now fill entire bottom plane
+
+#LID FASTENER PARAMETERS (pagoda cone) #
+# the peg that extends from the roof through the lid hole
+fastener_gap = 5
+# the cone barb height (compresses through lid hole then springs back)
+fastener_thickness = 5
+# the cone barb base diameter (determines lid hole size)
+fastener_diameter = 9
+
+#INTERCONNECT PARAMETERS#
+# flexible tube inteconnect diameter between nozzle arrays
+#tube_diameter = 7.4#PREV VALUE (small vinyle tube)
+tube_diameter = 12
+# thickness of the expanding cone to grip the tube (diameter wise, this is the total expected stretch/displacement of the tube from its tube_diameter)
+#inlet_thickness = 1.3 #INITAL VALUE# was 1.8
+inlet_thickness = 1.6
+# fraction of the segment arc angle the interconnect spans (0.09 = ~9% of segment arc)
+interconnect_span = 0.09
+
+#OBJECT PARAMETERS#
+wall_thickness = 4.5
+#the internal volume spray_rig segments
+rig_depth = 4
+#the max arclength of each segment, generally set to the 
+#max size that can be reliably 3D printed/manufactured
+max_segment_size = 150
+
+epsilon = 0.75
