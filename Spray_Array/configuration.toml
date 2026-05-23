@@ -55,3 +55,9 @@ rig_depth = 4
 max_segment_size = 150
 
 epsilon = 0.75
+
+#STENCIL PARAMETERS#
+# radial width of the drill stencil ring (centered on the cone mid-radius)
+stencil_width = 20
+# thickness of the stencil plate
+stencil_thickness = 5
