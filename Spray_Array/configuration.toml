@@ -1,6 +1,5 @@
 # all entries are in millimeters #
 # These configuration values are set for a 5 gallon bucket RepVap #
-
 #TODO: test configuration to workaround openscad render times
 #LID PARAMETERS#
 # initial_radius = 94
@@ -15,19 +14,17 @@ final_radius = 135 # Lowes 5 gallon bucket is 300mm diameter = 150mm rad - 9mm l
 #the radius from the middle of the cylindrical container to the wall where the spray rig will be mounted.
 #final_radius = 145#PREV VALUE
 #final_radius = 162
-
 #NOZZLE PARAMETERS#
 #nozzle_diameter = 1.25
-#nozzle_diameter = 0.75#INITIAL VALUE
-nozzle_diameter = 0.5
+#nozzle_diameter = 0.5#PREVIOUS RENDER VALUE
+nozzle_diameter = 0.75
 #NOTE: this is critical to get enough wall spacing for the object. Ensure this value is tuned correctly.
 #raise this value so that the spacing is equal to pressure to prevent premature collaborative intereference of streams
 #nozzle_wall_thickness = 2
 #production value:
-#nozzle_wall_thickness =  3 #INITIAL VALUE
-nozzle_wall_thickness = 3.25
+#nozzle_wall_thickness = 3.25#PREVIOUS RENDER VALUE
+nozzle_wall_thickness = 4
 #nozzle_group_offset = 10 #removed - nozzles now fill entire bottom plane
-
 #LID FASTENER PARAMETERS (pagoda cone) #
 # the peg that extends from the roof through the lid hole
 fastener_gap = 5
@@ -35,7 +32,6 @@ fastener_gap = 5
 fastener_thickness = 5
 # the cone barb base diameter (determines lid hole size)
 fastener_diameter = 9
-
 #INTERCONNECT PARAMETERS#
 # flexible tube inteconnect diameter between nozzle arrays
 #tube_diameter = 7.4#PREV VALUE (small vinyle tube)
@@ -45,7 +41,6 @@ tube_diameter = 12
 inlet_thickness = 1.6
 # fraction of the segment arc angle the interconnect spans (0.09 = ~9% of segment arc)
 interconnect_span = 0.09
-
 #OBJECT PARAMETERS#
 wall_thickness = 4.5
 #the internal volume spray_rig segments
@@ -53,9 +48,7 @@ rig_depth = 4
 #the max arclength of each segment, generally set to the 
 #max size that can be reliably 3D printed/manufactured
 max_segment_size = 150
-
 epsilon = 0.75
-
 #STENCIL PARAMETERS#
 # radial width of the drill stencil ring (centered on the cone mid-radius)
 stencil_width = 20
