@@ -14,11 +14,11 @@ def Inlet(
 ):
     outer = None
 
-    outer = cylinder(radius, radius + fastner_gap, center=True, segments=100)
+    outer = cylinder(radius, 2 * (radius + fastner_gap) + 6 * wall_thickness, center=True, segments=100)
     # TODO: this is 3* here due to centering, should be fine since isnt hole() but
     #       look here when bugs arise from differing configurations
     outer_hole = cylinder(
-        radius - wall_thickness, 3 * radius + fastner_gap, center=True, segments=100
+        radius - wall_thickness, 3 * radius + fastner_gap + 4 * wall_thickness, center=True, segments=100
     )
     # we subtract 3 times radius to ensure the sphere elbow is also tapped
     outer = outer - outer_hole
@@ -27,8 +27,8 @@ def Inlet(
     outer_hole = rotate([0, 90, 90])(outer_hole)
     outer = down(radius)(outer)
     outer_hole = down(radius)(outer_hole)
-    outer = forward(radius + fastner_gap / 2)(outer)
-    outer_hole = forward(radius + fastner_gap / 2)(outer_hole)
+    outer = forward(1.5 * radius + fastner_gap)(outer)
+    outer_hole = forward(1.5 * radius + fastner_gap)(outer_hole)
 
     # add a outer_cone to the inlet
     # TODO: this should be before all movements
@@ -58,22 +58,36 @@ def Inlet(
 
     # rotate this by 45 degrees
     intake = cylinder(radius, radius, center=True, segments=100)
-    intake_hole = cylinder(
+    intake_hole_cyl = cylinder(
         radius - wall_thickness,
         3 * radius + 2 * wall_thickness,
         center=True,
         segments=100,
     )
-    intake = intake - intake_hole
-    outer += back(radius)(rotate([45, 0, 0])(intake))
-    intake_hole = back(radius)(rotate([45, 0, 0])(intake_hole))
+    intake = intake - intake_hole_cyl
+    intake_pos = back(radius)(rotate([45, 0, 0])(intake))
+    intake_hole_pos = back(radius)(rotate([45, 0, 0])(intake_hole_cyl))
+    outer += intake_pos
+    outer -= intake_hole_pos
 
-    outer = outer - intake_hole
+    # cap the far end of the extended outer body with wall_thickness
+    cap = cylinder(radius, wall_thickness, center=True, segments=100)
+    cap = rotate([0, 90, 90])(cap)
+    cap = down(radius)(cap)
+    cap = forward(1.5 * radius + fastner_gap)(cap)
+    cap = forward(radius + fastner_gap + 5 * wall_thickness / 2)(cap)
+    outer += cap
+
+    # air vent: same radius as the initial inlet hole, through just the bottom wall
+    vent = cylinder(radius - wall_thickness, radius, center=True, segments=100)
+    vent = forward(2 * radius + 1.5 * fastner_gap + wall_thickness)(vent)
+    vent = down(2 * radius - wall_thickness / 2)(vent)
+    outer -= vent
 
     catch = sphere(radius + wall_thickness)
     catch = down(radius)(catch)
     catch = catch - outer_hole
-    catch = catch - intake_hole
+    catch = catch - intake_hole_pos
 
     outer = outer + catch
 
