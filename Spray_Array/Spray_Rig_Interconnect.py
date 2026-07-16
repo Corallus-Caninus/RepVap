@@ -151,40 +151,43 @@ class CirclePartitions(BuildCirclePartitions):
         span_angle = self.angle * self.interconnect_span
         ang = radians(span_angle)
         size = self.radius_major * 2
-
         # 2D wedge for trimming the ring to the right angular span
         wedge = polygon([[0,0], [size,0], [size*cos(ang), size*sin(ang)]])
-
         # Full ring sector profile (radius_minor → radius_major)
         outer = circle(r=self.radius_major, _fn=0)
         inner = circle(r=self.radius_minor, _fn=0)
         ring = outer - inner
         ring_sector = ring * wedge
-
         # Narrow ring sector for the edge wall (radius_minor → radius_minor + wall_thickness)
         inner_outer = circle(r=self.radius_minor + self.wall_thickness, _fn=0)
         inner_ring = inner_outer - inner
         inner_sector = inner_ring * wedge
-
         # Epsilon-expanded ring sector for the female (avoids coincident-face artifacts on subtraction)
-        female_outer = circle(r=self.radius_major + epsilon, _fn=0)
+        female_outer = circle(r=self.radius_major   + epsilon, _fn=0)
         female_inner = circle(r=self.radius_minor - epsilon, _fn=0)
         female_ring = female_outer - female_inner
         female_ring_sector = female_ring * wedge
         female_inner_outer = circle(r=self.radius_minor + self.wall_thickness + epsilon, _fn=0)
         female_inner_ring = female_inner_outer - female_inner
         female_inner_sector = female_inner_ring * wedge
-
+#same as inner but for radius_major
+        female_outer_inner = circle(r=self.radius_major+self.wall_thickness/2  + epsilon, _fn=0)
+        female_outer_ring = female_outer_inner - female_outer
+        female_outer_sector = female_outer_ring * wedge
         # Female interconnect
         female_top = linear_extrude(height=self.wall_thickness/2)(female_ring_sector)
         female_top = female_top.up(self.height/2 - self.wall_thickness/2)
         female_bottom = linear_extrude(height=self.wall_thickness/2)(female_ring_sector)
         female_bottom = female_bottom.up(-self.height/2)
         female_edge = linear_extrude(height=self.height + self.wall_thickness/2)(female_inner_sector)
-        female_edge = female_edge.down(self.height/2 + self.wall_thickness/4)
-        female_interface = female_top + female_bottom + female_edge
-        female_interface = female_interface.up(self.height)
+        female_edge = female_edge.down(self.height/2 + self.wall_thickness/2).left(self.wall_thickness/2)
+#now we do the same for radius major
+        female_outer_edge = linear_extrude(height=self.height - self.wall_thickness/2)(female_outer_sector)
+        female_outer_edge = female_outer_edge.down(self.height/2 - self.wall_thickness/2).left(self.wall_thickness/2)
+        female_edge_outer = female_outer_edge
 
+        female_interface = female_top + female_bottom  + female_edge+ female_edge_outer
+        female_interface = female_interface.up(self.height)
         # Male interconnect
         print("BUILDING INTERFACE")
         male_top = linear_extrude(height=self.wall_thickness/2)(ring_sector)
@@ -192,15 +195,22 @@ class CirclePartitions(BuildCirclePartitions):
         male_bottom = linear_extrude(height=self.wall_thickness/2)(ring_sector)
         male_bottom = male_bottom.up(-self.height/2)
         male_inner = circle(r=self.radius_minor, _fn=0)
-        male_inner_outer = circle(r=self.radius_minor + self.wall_thickness, _fn=0)
+        male_inner_outer = circle(r=self.radius_minor + self.wall_thickness/2, _fn=0)
         male_inner_ring = male_inner_outer - male_inner
         male_inner_sector = male_inner_ring * wedge
         male_edge = linear_extrude(height=self.height)(male_inner_sector)
         male_edge = male_edge.down(self.height/2)
-        male_interface = male_top + male_bottom + male_edge
+#TODO
+        male_outer = circle(r=self.radius_major - self.wall_thickness/2, _fn=0)
+        male_outer_outer = circle(r=self.radius_major , _fn=0)
+        male_outer_ring = male_outer_outer - male_outer
+        male_outer_sector = male_outer_ring * wedge
+        male_edge_outer = linear_extrude(height=self.height)(male_outer_sector)
+        male_edge_outer = male_edge_outer.down(self.height/2)
+#EOT
+        male_interface = male_top + male_bottom + male_edge+ male_edge_outer
         male_interface = male_interface.up(self.height)
         male_interface = rotate(self.angle)(male_interface)
-
         self.object = self.object- female_interface + male_interface
         return self
     '''
@@ -719,4 +729,6 @@ def spray_rig(
                 print(f"Render failed: {f.exception()}")
 if __name__ == "__main__":
     config = toml.load("configuration.toml")
-    spray_rig(**config)
+    # Filter out stencil-only params shared with Spray_Rig_Stencil.py
+    rig_params = {k: v for k, v in config.items() if k not in ("stencil_width", "stencil_thickness")}
+    spray_rig(**rig_params)
